@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Portal de Eventos Científicos: encontre congressos, acompanhe submissões e participe da comunidade científica."
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f172a'/%3E%3Cg fill='none' stroke='%234f46e5' stroke-width='2'%3E%3Cellipse cx='16' cy='16' rx='12' ry='5'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='5' transform='rotate(60 16 16)'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='5' transform='rotate(120 16 16)'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='3' fill='white'/%3E%3C/svg%3E"
+    />
+    <title>Portal de Eventos Científicos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#inicio" aria-label="Portal de Eventos Científicos - início">
+          <svg class="brand-mark" aria-hidden="true" viewBox="0 0 48 48">
+            <g fill="none" stroke="currentColor" stroke-width="2.8">
+              <ellipse cx="24" cy="24" rx="20" ry="8" />
+              <ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" />
+              <ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" />
+            </g>
+            <circle cx="24" cy="24" r="4.4" fill="currentColor" />
+          </svg>
+          <span>Portal de <strong>Eventos Científicos</strong></span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+          <span class="sr-only">Abrir menu</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+
+        <nav id="main-nav" class="main-nav" aria-label="Navegação principal">
+          <a class="active" href="#inicio">Início</a>
+          <a href="#eventos">Eventos</a>
+          <a href="#prazos">Prazos</a>
+          <a href="#areas">Minha área</a>
+        </nav>
+
+        <button class="button button-ghost login-button" type="button" data-open-login>
+          Entrar
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6M15 12H3M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section id="inicio" class="hero">
+        <div class="hero-orbit orbit-one" aria-hidden="true"></div>
+        <div class="hero-orbit orbit-two" aria-hidden="true"></div>
+        <div class="shell hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow"><span></span> Ciência que aproxima pessoas</span>
+            <h1>Encontre seu próximo <em>evento científico</em></h1>
+            <p>
+              Congressos, simpósios, workshops e chamadas de trabalhos em um só lugar.
+            </p>
+
+            <form class="search-panel" id="search-form" role="search">
+              <label class="search-field">
+                <span class="sr-only">Buscar eventos</span>
+                <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+                <input id="search-input" type="search" placeholder="Busque por nome, tema ou cidade" />
+              </label>
+              <label class="select-field">
+                <span class="sr-only">Área de conhecimento</span>
+                <select id="area-filter">
+                  <option value="todos">Todas as áreas</option>
+                  <option value="tecnologia">Tecnologia</option>
+                  <option value="saude">Saúde</option>
+                  <option value="educacao">Educação</option>
+                  <option value="engenharia">Engenharia</option>
+                </select>
+              </label>
+              <button class="button button-primary" type="submit">Buscar eventos</button>
+            </form>
+
+            <div class="hero-metrics" aria-label="Resumo do portal">
+              <div><strong>48</strong><span>eventos abertos</span></div>
+              <div><strong>12</strong><span>áreas do saber</span></div>
+              <div><strong>8 mil+</strong><span>participantes</span></div>
+            </div>
+          </div>
+
+          <article class="featured-card" aria-label="Evento em destaque">
+            <div class="featured-topline">
+              <span class="status status-light">Em destaque</span>
+              <button class="icon-button light" type="button" aria-label="Salvar evento" data-favorite>
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
+              </button>
+            </div>
+            <div class="featured-visual" aria-hidden="true">
+              <span class="node node-a"></span><span class="node node-b"></span><span class="node node-c"></span>
+              <svg viewBox="0 0 320 160"><path d="M24 122C78 38 139 154 194 68c33-52 66-22 102-48" /><path d="M12 143c68-43 119 11 173-29 42-31 69-34 123-8" /></svg>
+            </div>
+            <div class="featured-content">
+              <p class="date-label">12 a 15 de novembro · Salvador, BA</p>
+              <h2>Simpósio Brasileiro de Ciência de Dados</h2>
+              <p>Conectando pesquisa, indústria e impacto social por meio dos dados.</p>
+              <button class="text-link" type="button" data-event="Simpósio Brasileiro de Ciência de Dados">
+                Ver detalhes <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="eventos" class="section shell">
+        <div class="section-heading heading-row">
+          <div>
+            <span class="eyebrow dark"><span></span> Agenda científica</span>
+            <h2>Próximos eventos</h2>
+            <p>Descubra oportunidades para aprender, apresentar e criar novas conexões.</p>
+          </div>
+          <a class="text-link desktop-link" href="#eventos">Ver todos <span aria-hidden="true">→</span></a>
+        </div>
+
+        <div class="filter-chips" role="group" aria-label="Filtrar eventos por modalidade">
+          <button class="chip active" type="button" data-filter="todos" aria-pressed="true">Todos</button>
+          <button class="chip" type="button" data-filter="congresso" aria-pressed="false">Congressos</button>
+          <button class="chip" type="button" data-filter="simposio" aria-pressed="false">Simpósios</button>
+          <button class="chip" type="button" data-filter="workshop" aria-pressed="false">Workshops</button>
+          <button class="chip" type="button" data-filter="seminario" aria-pressed="false">Seminários</button>
+        </div>
+
+        <div class="event-grid" id="event-grid" aria-live="polite">
+          <article class="event-card" data-type="simposio" data-area="tecnologia" data-search="simpósio ciência dados salvador tecnologia">
+            <div class="event-cover cover-data">
+              <span class="status">Simpósio</span>
+              <button class="icon-button" type="button" aria-label="Salvar Simpósio de Ciência de Dados" data-favorite>
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
+              </button>
+              <div class="cover-symbol" aria-hidden="true">∑</div>
+            </div>
+            <div class="event-content">
+              <p class="date-label">12–15 NOV 2026</p>
+              <h3>Simpósio Brasileiro de Ciência de Dados</h3>
+              <ul class="event-meta">
+                <li><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>Salvador · BA</li>
+                <li><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>Submissões até 08/10</li>
+              </ul>
+              <button class="card-action" type="button" data-event="Simpósio Brasileiro de Ciência de Dados">Ver evento <span>→</span></button>
+            </div>
+          </article>
+
+          <article class="event-card" data-type="congresso" data-area="saude" data-search="congresso inovação saúde recife medicina biotecnologia">
+            <div class="event-cover cover-health">
+              <span class="status">Congresso</span>
+              <button class="icon-button" type="button" aria-label="Salvar Congresso de Inovação em Saúde" data-favorite>
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
+              </button>
+              <div class="cover-symbol" aria-hidden="true">✚</div>
+            </div>
+            <div class="event-content">
+              <p class="date-label">22–24 NOV 2026</p>
+              <h3>Congresso Nacional de Inovação em Saúde</h3>
+              <ul class="event-meta">
+                <li><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>Recife · PE</li>
+                <li><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>Inscrições até 15/11</li>
+              </ul>
+              <button class="card-action" type="button" data-event="Congresso Nacional de Inovação em Saúde">Ver evento <span>→</span></button>
+            </div>
+          </article>
+
+          <article class="event-card" data-type="workshop" data-area="engenharia" data-search="workshop robótica engenharia feira santana automação">
+            <div class="event-cover cover-robotics">
+              <span class="status">Workshop</span>
+              <button class="icon-button" type="button" aria-label="Salvar Workshop de Robótica" data-favorite>
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
+              </button>
+              <div class="cover-symbol" aria-hidden="true">⌬</div>
+            </div>
+            <div class="event-content">
+              <p class="date-label">05 DEZ 2026</p>
+              <h3>Workshop de Robótica e Sistemas Autônomos</h3>
+              <ul class="event-meta">
+                <li><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>Feira de Santana · BA</li>
+                <li><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>Vagas disponíveis</li>
+              </ul>
+              <button class="card-action" type="button" data-event="Workshop de Robótica e Sistemas Autônomos">Ver evento <span>→</span></button>
+            </div>
+          </article>
+        </div>
+
+        <div class="empty-state" id="empty-state" hidden>
+          <svg aria-hidden="true" viewBox="0 0 48 48"><circle cx="21" cy="21" r="13" /><path d="m42 42-11-11M16 21h10" /></svg>
+          <h3>Nenhum evento encontrado</h3>
+          <p>Tente usar outros termos ou remover um dos filtros.</p>
+          <button class="button button-secondary" type="button" id="clear-filters">Limpar filtros</button>
+        </div>
+      </section>
+
+      <section id="prazos" class="deadline-section">
+        <div class="shell deadline-grid">
+          <div class="deadline-copy">
+            <span class="eyebrow"><span></span> Fique por dentro</span>
+            <h2>Chamadas com prazo aberto</h2>
+            <p>Acompanhe as próximas datas de submissão e não perca uma oportunidade.</p>
+            <a class="button button-light" href="#eventos">Explorar chamadas</a>
+          </div>
+          <div class="deadline-list">
+            <article>
+              <time datetime="2026-10-08"><strong>08</strong>OUT</time>
+              <div><span>Artigo completo</span><h3>Ciência de Dados 2026</h3><p>Prazo final para submissões</p></div>
+              <span class="deadline-arrow" aria-hidden="true">→</span>
+            </article>
+            <article>
+              <time datetime="2026-10-21"><strong>21</strong>OUT</time>
+              <div><span>Resumo expandido</span><h3>Seminário de Educação Digital</h3><p>7 dias restantes</p></div>
+              <span class="deadline-arrow" aria-hidden="true">→</span>
+            </article>
+            <article>
+              <time datetime="2026-11-02"><strong>02</strong>NOV</time>
+              <div><span>Pôster científico</span><h3>Congresso de Inovação em Saúde</h3><p>Chamada aberta</p></div>
+              <span class="deadline-arrow" aria-hidden="true">→</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="areas" class="section shell audience-section">
+        <div class="section-heading centered">
+          <span class="eyebrow dark"><span></span> Uma jornada para cada perfil</span>
+          <h2>Acesse sua área no portal</h2>
+          <p>Organize suas atividades acadêmicas em um só lugar.</p>
+        </div>
+        <div class="audience-grid">
+          <button class="audience-card" type="button" data-role="Participante">
+            <span class="audience-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></svg></span>
+            <span><strong>Participante</strong><small>Inscrições, crachá e certificado</small></span><b aria-hidden="true">→</b>
+          </button>
+          <button class="audience-card" type="button" data-role="Autor">
+            <span class="audience-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4h12l4 4v12H4zM8 12h8M8 16h6M15 4v5h5" /></svg></span>
+            <span><strong>Autor</strong><small>Submissões, pareceres e versão final</small></span><b aria-hidden="true">→</b>
+          </button>
+          <button class="audience-card" type="button" data-role="Revisor">
+            <span class="audience-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h5M8 17h4" /><path d="m15 15 2 2 4-5" /></svg></span>
+            <span><strong>Revisor</strong><small>Avaliações, critérios e prazos</small></span><b aria-hidden="true">→</b>
+          </button>
+          <button class="audience-card" type="button" data-role="Comitê científico">
+            <span class="audience-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="9" r="3" /><circle cx="17" cy="8" r="2.5" /><path d="M2 20c0-4 2.7-6 6-6s6 2 6 6M14 14c3.8-.7 7 1.4 7 5" /></svg></span>
+            <span><strong>Comitê científico</strong><small>Evento, revisões e decisões</small></span><b aria-hidden="true">→</b>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <a class="brand footer-brand" href="#inicio">
+          <svg class="brand-mark" aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg>
+          <span>Portal de <strong>Eventos Científicos</strong></span>
+        </a>
+        <p>Conhecimento que circula. Pessoas que se conectam.</p>
+        <nav aria-label="Links do rodapé"><a href="#eventos">Eventos</a><a href="#prazos">Chamadas</a><a href="#areas">Minha área</a></nav>
+      </div>
+      <div class="shell footer-bottom"><span>© 2026 Portal de Eventos Científicos</span><span>Protótipo acadêmico · UNEB</span></div>
+    </footer>
+
+    <dialog class="portal-dialog" id="portal-dialog">
+      <button class="dialog-close" type="button" aria-label="Fechar janela" data-close-dialog>×</button>
+      <div class="dialog-icon"><svg aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg></div>
+      <p class="dialog-kicker">Acesso ao portal</p>
+      <h2 id="dialog-title">Entre na sua conta</h2>
+      <p id="dialog-description">Acompanhe inscrições, submissões e atividades do evento.</p>
+      <form id="login-form">
+        <label>E-mail institucional ou pessoal<input type="email" placeholder="nome@exemplo.com" required /></label>
+        <label>Senha<input type="password" placeholder="Digite sua senha" minlength="6" required /></label>
+        <div class="form-row"><label class="check-label"><input type="checkbox" /> Lembrar acesso</label><a href="#">Esqueci a senha</a></div>
+        <button class="button button-primary full" type="submit">Entrar</button>
+      </form>
+      <p class="dialog-footer">Ainda não tem conta? <a href="#">Cadastre-se</a></p>
+      <div class="dialog-success" id="dialog-success" hidden>
+        <span>✓</span><h2>Login demonstrado</h2><p>Este esboço apresenta o fluxo inicial de acesso.</p>
+        <button class="button button-primary full" type="button" data-close-dialog>Continuar</button>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
