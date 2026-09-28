@@ -10,16 +10,95 @@ const loginDialog = document.querySelector('#portal-dialog');
 const eventDialog = document.querySelector('#event-dialog');
 const registrationDialog = document.querySelector('#registration-dialog');
 const accessDialog = document.querySelector('#access-dialog');
+const chatTrigger = document.querySelector('#chat-trigger');
+const chatPanel = document.querySelector('#event-chat');
+const chatMessages = document.querySelector('#chat-messages');
+const chatForm = document.querySelector('#chat-form');
+const chatInput = document.querySelector('#chat-input');
 const toast = document.querySelector('#toast');
 let selectedType = 'todos';
 let toastTimer;
 let wizardStep = 1;
+let currentChatEvent = null;
 
 const events = {
-  'Simpósio Brasileiro de Ciência de Dados': { type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.' },
-  'Congresso Nacional de Inovação em Saúde': { type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.' },
-  'Workshop de Robótica e Sistemas Autônomos': { type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.' }
+  'Simpósio Brasileiro de Ciência de Dados': { type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'credenciamento às 8h30, palestra de abertura às 10h e sessões técnicas às 14h', contact: 'eventos@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.' },
+  'Congresso Nacional de Inovação em Saúde': { type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'inscrições até 15 de novembro de 2026; chamada de pôsteres até 2 de novembro', registration: 'inscrições abertas no protótipo', program: 'a programação detalhada ainda não foi cadastrada', contact: 'eventos@universidade.br', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.' },
+  'Workshop de Robótica e Sistemas Autônomos': { type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'vagas disponíveis enquanto houver disponibilidade', registration: 'inscrições abertas no protótipo', program: 'atividades práticas de robótica, automação e sistemas autônomos', contact: 'eventos@universidade.br', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.' }
 };
+
+function addChatMessage(text, sender = 'bot') {
+  const message = document.createElement('div');
+  message.className = `chat-message ${sender}`;
+  const label = document.createElement('span');
+  label.className = 'sr-only';
+  label.textContent = sender === 'bot' ? 'Assistente:' : 'Você:';
+  const paragraph = document.createElement('p');
+  paragraph.textContent = text;
+  message.append(label, paragraph);
+  chatMessages.append(message);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return message;
+}
+
+function findEvent(question) {
+  const normalized = normalize(question);
+  return Object.entries(events).find(([, event]) => event.aliases.some((alias) => normalized.includes(alias))) || null;
+}
+
+function answerEventQuestion(question) {
+  const normalized = normalize(question);
+  const match = findEvent(question);
+  if (match) currentChatEvent = match;
+  const selected = match || currentChatEvent;
+
+  if (/quais|listar|disponiveis|cadastrados|todos os eventos/.test(normalized) && /evento/.test(normalized)) {
+    return `Temos 3 eventos cadastrados:\n• Simpósio Brasileiro de Ciência de Dados — Salvador\n• Congresso Nacional de Inovação em Saúde — Recife\n• Workshop de Robótica e Sistemas Autônomos — Feira de Santana`;
+  }
+  if (/proximo prazo|prazos proximos|prazo geral/.test(normalized)) {
+    return 'O próximo prazo é 8 de outubro de 2026, para submissão de artigos no Simpósio Brasileiro de Ciência de Dados.';
+  }
+  if (!selected) {
+    return 'Sobre qual evento você quer saber? Pode escrever “Ciência de Dados”, “Inovação em Saúde” ou “Robótica”.';
+  }
+
+  const [name, event] = selected;
+  if (/onde|local|cidade|endereco/.test(normalized)) return `${name} será em ${event.location}, no formato ${event.format}.`;
+  if (/quando|data|dia|periodo/.test(normalized)) return `${name} acontecerá de ${event.date}.`;
+  if (/prazo|submiss|chamada|ate quando/.test(normalized)) return `Para ${name}: ${event.deadline}.`;
+  if (/inscri|valor|preco|custa|pagamento/.test(normalized)) return `Sobre a inscrição de ${name}: ${event.registration}.`;
+  if (/programa|horario|atividade|palestra/.test(normalized)) return `Programação de ${name}: ${event.program}.`;
+  if (/contato|email|telefone|falar/.test(normalized)) return `Contato de ${name}: ${event.contact}.`;
+  if (/online|presencial|formato/.test(normalized)) return `${name} está cadastrado como evento ${event.format}.`;
+  if (/sobre|tema|assunto|o que e/.test(normalized)) return `${name}: ${event.description}`;
+  return `${name} acontece de ${event.date}, em ${event.location}. Posso informar também programação, inscrição, prazos e contato.`;
+}
+
+function sendChatQuestion(question) {
+  const cleanQuestion = question.trim();
+  if (!cleanQuestion) return;
+  addChatMessage(cleanQuestion, 'user');
+  chatInput.value = '';
+  const typing = document.createElement('div');
+  typing.className = 'chat-message bot typing';
+  typing.setAttribute('aria-label', 'Assistente digitando');
+  typing.innerHTML = '<p><i></i><i></i><i></i></p>';
+  chatMessages.append(typing);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  window.setTimeout(() => {
+    typing.remove();
+    addChatMessage(answerEventQuestion(cleanQuestion));
+  }, 480);
+}
+
+function toggleChat(forceOpen) {
+  const open = typeof forceOpen === 'boolean' ? forceOpen : chatPanel.hidden;
+  chatPanel.hidden = !open;
+  chatTrigger.setAttribute('aria-expanded', String(open));
+  chatTrigger.setAttribute('aria-label', open ? 'Fechar assistente de eventos' : 'Abrir assistente de eventos');
+  if (open) window.setTimeout(() => chatInput.focus(), 0);
+  else chatTrigger.focus();
+}
 
 function showToast(message) {
   toast.textContent = message;
@@ -253,6 +332,17 @@ document.querySelector('#reset-access').addEventListener('click', () => {
   applyAccessPreferences({ fontSize: 16, contrast: false, reducedMotion: false });
   saveAccessPreferences();
   showToast('Preferências de acessibilidade restauradas.');
+});
+
+chatTrigger.addEventListener('click', () => toggleChat());
+document.querySelector('[data-close-chat]').addEventListener('click', () => toggleChat(false));
+chatForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  sendChatQuestion(chatInput.value);
+});
+document.querySelectorAll('[data-chat-question]').forEach((button) => button.addEventListener('click', () => sendChatQuestion(button.dataset.chatQuestion)));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !chatPanel.hidden) toggleChat(false);
 });
 
 [loginDialog, eventDialog, registrationDialog, accessDialog].forEach((dialog) => dialog.addEventListener('click', (event) => {

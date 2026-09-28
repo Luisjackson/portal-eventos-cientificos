@@ -17,6 +17,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 ## Média dificuldade
 
 - [x] Inscrição demonstrativa em etapas, com categoria, atividades, carga horária, resumo e Pix simulado.
+- [x] Chatbot demonstrativo para dúvidas sobre datas, locais, inscrições, programação e prazos dos eventos cadastrados.
 - [ ] Painel do participante com inscrição, atividades, comprovante, crachá e certificado.
 - [ ] Crachá digital com QR Code demonstrativo.
 - [ ] Certificado com código de validação e consulta pública.

@@ -147,11 +147,11 @@
         <div class="event-grid" id="event-grid" aria-live="polite">
           <article class="event-card" data-type="simposio" data-area="tecnologia" data-search="simpósio ciência dados salvador tecnologia">
             <div class="event-cover cover-data">
+              <img src="./assets/events/data-science.webp" alt="Auditório de um simpósio com apresentação sobre ciência de dados" />
               <span class="status">Simpósio</span>
               <button class="icon-button" type="button" aria-label="Salvar Simpósio de Ciência de Dados" data-favorite>
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
               </button>
-              <div class="cover-symbol" aria-hidden="true">∑</div>
             </div>
             <div class="event-content">
               <p class="date-label">12–15 NOV 2026</p>
@@ -166,11 +166,11 @@
 
           <article class="event-card" data-type="congresso" data-area="saude" data-search="congresso inovação saúde recife medicina biotecnologia">
             <div class="event-cover cover-health">
+              <img src="./assets/events/health-innovation.webp" alt="Pesquisadores apresentando tecnologias de saúde em um congresso" />
               <span class="status">Congresso</span>
               <button class="icon-button" type="button" aria-label="Salvar Congresso de Inovação em Saúde" data-favorite>
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
               </button>
-              <div class="cover-symbol" aria-hidden="true">✚</div>
             </div>
             <div class="event-content">
               <p class="date-label">22–24 NOV 2026</p>
@@ -185,11 +185,11 @@
 
           <article class="event-card" data-type="workshop" data-area="engenharia" data-search="workshop robótica engenharia feira santana automação">
             <div class="event-cover cover-robotics">
+              <img src="./assets/events/robotics-workshop.webp" alt="Estudantes trabalhando em um robô durante uma oficina" />
               <span class="status">Workshop</span>
               <button class="icon-button" type="button" aria-label="Salvar Workshop de Robótica" data-favorite>
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9.2-8.6C1 8.9 3.1 5 7 5c2.1 0 3.5 1.2 5 3 1.5-1.8 2.9-3 5-3 3.9 0 6 3.9 4.2 7.4C19 16.6 12 21 12 21z" /></svg>
               </button>
-              <div class="cover-symbol" aria-hidden="true">⌬</div>
             </div>
             <div class="event-content">
               <p class="date-label">05 DEZ 2026</p>
@@ -367,6 +367,33 @@
       <div class="access-options"><div><span>Tamanho do texto</span><div class="button-group"><button type="button" data-font="decrease" aria-label="Diminuir texto">A−</button><button type="button" data-font="reset">Padrão</button><button type="button" data-font="increase" aria-label="Aumentar texto">A+</button></div></div><label><span><strong>Alto contraste</strong><small>Aumenta a distinção entre texto e fundo</small></span><input type="checkbox" id="contrast-toggle" /></label><label><span><strong>Reduzir movimento</strong><small>Desativa animações e rolagem suave</small></span><input type="checkbox" id="motion-toggle" /></label></div>
       <button class="button button-secondary full" type="button" id="reset-access">Restaurar preferências</button>
     </dialog>
+
+    <button class="chat-trigger" type="button" id="chat-trigger" aria-expanded="false" aria-controls="event-chat" aria-label="Abrir assistente de eventos">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 18.5 3.5 22l4.2-2A9.5 9.5 0 1 0 5 18.5Z" /><path d="M8 11h.01M12 11h.01M16 11h.01" /></svg>
+      <span class="chat-trigger-label">Tire suas dúvidas</span>
+    </button>
+
+    <section class="chat-panel" id="event-chat" role="dialog" aria-modal="false" aria-labelledby="chat-title" hidden>
+      <header class="chat-header">
+        <span class="chat-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 9h8M8 13h5M7 19l-4 2 1.4-4A8 8 0 1 1 7 19Z" /></svg></span>
+        <div><h2 id="chat-title">Assistente de eventos</h2><p><span aria-hidden="true"></span> Respostas com dados cadastrados</p></div>
+        <button class="chat-close" type="button" aria-label="Fechar assistente" data-close-chat>×</button>
+      </header>
+      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="chat-message bot"><span class="sr-only">Assistente:</span><p>Olá! Posso ajudar com datas, locais, inscrições, programação e prazos dos eventos.</p></div>
+      </div>
+      <div class="chat-suggestions" aria-label="Perguntas sugeridas">
+        <button type="button" data-chat-question="Quais eventos estão disponíveis?">Eventos disponíveis</button>
+        <button type="button" data-chat-question="Qual é o próximo prazo?">Próximos prazos</button>
+        <button type="button" data-chat-question="Onde será o evento de robótica?">Local da robótica</button>
+      </div>
+      <form class="chat-form" id="chat-form">
+        <label class="sr-only" for="chat-input">Digite sua dúvida sobre os eventos</label>
+        <input id="chat-input" type="text" maxlength="240" autocomplete="off" placeholder="Pergunte sobre um evento..." required />
+        <button type="submit" aria-label="Enviar pergunta"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 4 17 8-17 8 3-8-3-8Z" /><path d="M7 12h14" /></svg></button>
+      </form>
+      <p class="chat-note">Assistente demonstrativo: as respostas usam apenas informações deste protótipo.</p>
+    </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="./app.js"></script>
