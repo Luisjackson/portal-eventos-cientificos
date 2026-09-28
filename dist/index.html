@@ -58,6 +58,13 @@
       </div>
     </header>
 
+    <button class="access-trigger" type="button" data-open-access data-label="Acessibilidade" aria-label="Abrir recursos de acessibilidade" title="Acessibilidade">
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <circle cx="12" cy="4" r="2" />
+        <path d="M5 8.5c2.2.8 4.6 1.2 7 1.2s4.8-.4 7-1.2M12 10v4M8 21l4-7 4 7" />
+      </svg>
+    </button>
+
     <main id="conteudo">
       <section id="inicio" class="hero">
         <div class="hero-orbit orbit-one" aria-hidden="true"></div>
@@ -213,6 +220,12 @@
             <a class="button button-light" href="#eventos">Explorar chamadas</a>
           </div>
           <div class="deadline-list">
+            <div class="deadline-progress" aria-label="Etapas da chamada de trabalhos">
+              <div class="done"><span>1</span><strong>Chamada aberta</strong></div>
+              <div class="current" aria-current="step"><span>2</span><strong>Submissões</strong></div>
+              <div><span>3</span><strong>Avaliação</strong></div>
+              <div><span>4</span><strong>Resultado</strong></div>
+            </div>
             <article>
               <time datetime="2026-10-08"><strong>08</strong>OUT</time>
               <div><span>Artigo completo</span><h3>Ciência de Dados 2026</h3><p>Prazo final para submissões</p></div>
@@ -277,9 +290,11 @@
       <p class="dialog-kicker">Acesso ao portal</p>
       <h2 id="dialog-title">Entre na sua conta</h2>
       <p id="dialog-description">Acompanhe inscrições, submissões e atividades do evento.</p>
-      <form id="login-form">
-        <label>E-mail institucional ou pessoal<input type="email" placeholder="nome@exemplo.com" required /></label>
-        <label>Senha<input type="password" placeholder="Digite sua senha" minlength="6" required /></label>
+      <form id="login-form" novalidate>
+        <label>E-mail institucional ou pessoal<input id="login-email" type="email" placeholder="nome@exemplo.com" aria-describedby="login-email-error" required /></label>
+        <p class="field-error" id="login-email-error" aria-live="polite"></p>
+        <label>Senha<input id="login-password" type="password" placeholder="Digite sua senha" minlength="6" aria-describedby="login-password-error" required /></label>
+        <p class="field-error" id="login-password-error" aria-live="polite"></p>
         <div class="form-row"><label class="check-label"><input type="checkbox" /> Lembrar acesso</label><a href="#">Esqueci a senha</a></div>
         <button class="button button-primary full" type="submit">Entrar</button>
       </form>
@@ -288,6 +303,69 @@
         <span>✓</span><h2>Login demonstrado</h2><p>Este esboço apresenta o fluxo inicial de acesso.</p>
         <button class="button button-primary full" type="button" data-close-dialog>Continuar</button>
       </div>
+    </dialog>
+
+    <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
+      <button class="dialog-close" type="button" aria-label="Fechar detalhes do evento" data-close-event>×</button>
+      <div class="event-dialog-loading" id="event-dialog-loading" aria-live="polite">
+        <div class="skeleton skeleton-label"></div><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-copy"></div>
+      </div>
+      <div id="event-dialog-content" hidden>
+        <header class="event-dialog-header">
+          <span class="status" id="event-dialog-type">Simpósio</span>
+          <p id="event-dialog-date">12 a 15 de novembro de 2026</p>
+          <h2 id="event-dialog-title">Simpósio Brasileiro de Ciência de Dados</h2>
+          <div class="event-dialog-meta"><span id="event-dialog-location">Salvador · BA</span><span>Presencial</span></div>
+          <button class="button button-primary" type="button" data-start-registration>Inscreva-se</button>
+        </header>
+        <nav class="detail-nav" aria-label="Conteúdo do evento">
+          <a href="#detalhe-sobre">Sobre</a><a href="#detalhe-programacao">Programação</a><a href="#detalhe-prazos">Prazos</a><a href="#detalhe-contato">Contato</a>
+        </nav>
+        <div class="event-dialog-body">
+          <section id="detalhe-sobre"><h3>Sobre o evento</h3><p id="event-dialog-description">Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.</p></section>
+          <section id="detalhe-programacao"><h3>Programação</h3><div class="program-list"><article><time>08:30</time><div><strong>Credenciamento e acolhimento</strong><span>Hall principal</span></div></article><article><time>10:00</time><div><strong>Palestra de abertura</strong><span>Auditório central</span></div></article><article><time>14:00</time><div><strong>Sessões técnicas</strong><span>Salas 1 a 4</span></div></article></div></section>
+          <section id="detalhe-prazos"><h3>Prazos importantes</h3><ul class="detail-list"><li><span>08 OUT</span>Submissão de artigos</li><li><span>28 OUT</span>Divulgação dos resultados</li><li><span>05 NOV</span>Envio da versão final</li></ul></section>
+          <section><h3>Orientações</h3><p>Artigos completos devem seguir o modelo do evento e ter entre 8 e 12 páginas. O arquivo pode ser revisado antes do envio final.</p><a class="inline-action" href="#">Consultar chamada de trabalhos <span aria-hidden="true">→</span></a></section>
+          <section><h3>Trabalhos aprovados</h3><div class="approved-paper"><span>Artigo</span><strong>Visualização acessível de dados públicos</strong><p>Ana Souza, Carlos Lima e Marina Reis</p></div></section>
+          <section id="detalhe-contato"><h3>Contato</h3><p>Secretaria do evento · eventos@universidade.br · (71) 3000-2026</p></section>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="registration-dialog" id="registration-dialog" aria-labelledby="registration-title">
+      <button class="dialog-close" type="button" aria-label="Fechar inscrição" data-close-registration>×</button>
+      <p class="dialog-kicker">Inscrição demonstrativa</p>
+      <h2 id="registration-title">Simpósio Brasileiro de Ciência de Dados</h2>
+      <div class="wizard-progress" aria-label="Progresso da inscrição"><span class="active">1</span><i></i><span>2</span><i></i><span>3</span></div>
+      <form id="registration-form" novalidate>
+        <section class="wizard-step active" data-step="1">
+          <h3>Escolha sua categoria</h3><p>Os valores são apenas ilustrativos.</p>
+          <label class="choice-card"><input type="radio" name="category" value="Estudante" data-price="60" /><span><strong>Estudante</strong><small>Necessário comprovante</small></span><b>R$ 60</b></label>
+          <label class="choice-card"><input type="radio" name="category" value="Profissional" data-price="120" /><span><strong>Profissional</strong><small>Participação completa</small></span><b>R$ 120</b></label>
+          <p class="field-error" id="category-error" aria-live="polite"></p>
+        </section>
+        <section class="wizard-step" data-step="2" hidden>
+          <h3>Atividades complementares</h3><p>Selecione atividades para compor sua carga horária.</p>
+          <label class="choice-card"><input type="checkbox" name="activity" value="Minicurso de Python" data-hours="4" /><span><strong>Minicurso de Python</strong><small>12 de novembro · 4 horas</small></span></label>
+          <label class="choice-card"><input type="checkbox" name="activity" value="Oficina de visualização" data-hours="3" /><span><strong>Oficina de visualização</strong><small>13 de novembro · 3 horas</small></span></label>
+          <label class="choice-card"><input type="checkbox" name="activity" value="Mesa sobre IA responsável" data-hours="2" /><span><strong>Mesa sobre IA responsável</strong><small>14 de novembro · 2 horas</small></span></label>
+        </section>
+        <section class="wizard-step" data-step="3" hidden>
+          <h3>Resumo e pagamento</h3>
+          <div class="registration-summary"><div><span>Categoria</span><strong id="summary-category">-</strong></div><div><span>Carga horária adicional</span><strong id="summary-hours">0 horas</strong></div><div><span>Total</span><strong id="summary-price">R$ 0</strong></div></div>
+          <label class="choice-card payment-choice"><input type="radio" name="payment" value="Pix" checked /><span><strong>Pix</strong><small>Confirmação imediata no protótipo</small></span></label>
+          <div class="prototype-note"><strong>Ambiente demonstrativo</strong><span>Nenhuma cobrança ou informação financeira será enviada.</span></div>
+        </section>
+        <div class="wizard-actions"><button class="button button-secondary" id="wizard-back" type="button" hidden>Voltar</button><button class="button button-primary" id="wizard-next" type="button">Continuar</button></div>
+      </form>
+      <div class="registration-success" id="registration-success" hidden><span>✓</span><h3>Inscrição confirmada!</h3><p>O comprovante, o crachá digital e as atividades já aparecem na área do participante.</p><div class="mock-code">PROTO-2026-0184</div><button class="button button-primary full" type="button" data-close-registration>Concluir</button></div>
+    </dialog>
+
+    <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title">
+      <button class="dialog-close" type="button" aria-label="Fechar recursos de acessibilidade" data-close-access>×</button>
+      <p class="dialog-kicker">Preferências de leitura</p><h2 id="access-title">Acessibilidade</h2><p>Personalize a interface neste dispositivo.</p>
+      <div class="access-options"><div><span>Tamanho do texto</span><div class="button-group"><button type="button" data-font="decrease" aria-label="Diminuir texto">A−</button><button type="button" data-font="reset">Padrão</button><button type="button" data-font="increase" aria-label="Aumentar texto">A+</button></div></div><label><span><strong>Alto contraste</strong><small>Aumenta a distinção entre texto e fundo</small></span><input type="checkbox" id="contrast-toggle" /></label><label><span><strong>Reduzir movimento</strong><small>Desativa animações e rolagem suave</small></span><input type="checkbox" id="motion-toggle" /></label></div>
+      <button class="button button-secondary full" type="button" id="reset-access">Restaurar preferências</button>
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
