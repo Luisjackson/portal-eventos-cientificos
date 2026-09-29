@@ -27,6 +27,9 @@ jobs:
       - name: Configurar o GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Atualizar a versão dos recursos
+        run: sed -i "s/__BUILD_VERSION__/${GITHUB_SHA}/g" dist/index.html
+
       - name: Preparar os arquivos do site
         uses: actions/upload-pages-artifact@v4
         with:
