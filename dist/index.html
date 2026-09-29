@@ -52,7 +52,8 @@
         </nav>
 
         <button class="button button-ghost login-button" type="button" data-open-login>
-          Entrar
+          <span class="login-avatar" aria-hidden="true" hidden></span>
+          <span class="login-label">Entrar</span>
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6M15 12H3M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" /></svg>
         </button>
       </div>
@@ -286,22 +287,51 @@
 
     <dialog class="portal-dialog" id="portal-dialog">
       <button class="dialog-close" type="button" aria-label="Fechar janela" data-close-dialog>×</button>
-      <div class="dialog-icon"><svg aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg></div>
-      <p class="dialog-kicker">Acesso ao portal</p>
-      <h2 id="dialog-title">Entre na sua conta</h2>
-      <p id="dialog-description">Acompanhe inscrições, submissões e atividades do evento.</p>
+      <div id="auth-intro">
+        <div class="dialog-icon"><svg aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg></div>
+        <p class="dialog-kicker">Acesso ao portal</p>
+        <h2 id="dialog-title">Entre na sua conta</h2>
+        <p id="dialog-description">Acompanhe inscrições, submissões e atividades do evento.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Escolha entre entrar ou criar conta">
+          <button class="active" type="button" role="tab" aria-selected="true" data-auth-mode="login">Entrar</button>
+          <button type="button" role="tab" aria-selected="false" data-auth-mode="signup">Criar conta</button>
+        </div>
+      </div>
       <form id="login-form" novalidate>
         <label>E-mail institucional ou pessoal<input id="login-email" type="email" placeholder="nome@exemplo.com" aria-describedby="login-email-error" required /></label>
         <p class="field-error" id="login-email-error" aria-live="polite"></p>
         <label>Senha<input id="login-password" type="password" placeholder="Digite sua senha" minlength="6" aria-describedby="login-password-error" required /></label>
         <p class="field-error" id="login-password-error" aria-live="polite"></p>
-        <div class="form-row"><label class="check-label"><input type="checkbox" /> Lembrar acesso</label><a href="#">Esqueci a senha</a></div>
+        <div class="form-row"><label class="check-label"><input type="checkbox" id="remember-login" /> Lembrar acesso</label><button class="link-button" type="button" id="forgot-password">Esqueci a senha</button></div>
         <button class="button button-primary full" type="submit">Entrar</button>
       </form>
-      <p class="dialog-footer">Ainda não tem conta? <a href="#">Cadastre-se</a></p>
+      <form id="signup-form" novalidate hidden>
+        <label>Nome completo<input id="signup-name" type="text" autocomplete="name" placeholder="Como devemos chamar você?" aria-describedby="signup-name-error" required /></label>
+        <p class="field-error" id="signup-name-error" aria-live="polite"></p>
+        <label>E-mail<input id="signup-email" type="email" autocomplete="email" placeholder="nome@exemplo.com" aria-describedby="signup-email-error" required /></label>
+        <p class="field-error" id="signup-email-error" aria-live="polite"></p>
+        <label>Perfil principal<select id="signup-role" required><option value="Participante">Participante</option><option value="Autor">Autor</option><option value="Revisor">Revisor</option><option value="Comitê científico">Comitê científico</option></select></label>
+        <label>Senha<input id="signup-password" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" aria-describedby="signup-password-help signup-password-error" required /></label>
+        <small class="password-help" id="signup-password-help">Use pelo menos 8 caracteres, uma letra e um número.</small>
+        <p class="field-error" id="signup-password-error" aria-live="polite"></p>
+        <label>Confirmar senha<input id="signup-confirm" type="password" autocomplete="new-password" placeholder="Digite a senha novamente" aria-describedby="signup-confirm-error" required /></label>
+        <p class="field-error" id="signup-confirm-error" aria-live="polite"></p>
+        <label class="terms-check"><input id="signup-terms" type="checkbox" /> <span>Concordo com o uso demonstrativo dos dados neste navegador.</span></label>
+        <p class="field-error" id="signup-terms-error" aria-live="polite"></p>
+        <button class="button button-primary full" type="submit">Criar minha conta</button>
+      </form>
+      <p class="prototype-auth-note" id="prototype-auth-note">Protótipo acadêmico: a conta será salva somente neste navegador.</p>
       <div class="dialog-success" id="dialog-success" hidden>
-        <span>✓</span><h2>Login demonstrado</h2><p>Este esboço apresenta o fluxo inicial de acesso.</p>
+        <span>✓</span><h2 id="auth-success-title">Acesso realizado!</h2><p id="auth-success-message">Sua sessão demonstrativa foi iniciada.</p>
         <button class="button button-primary full" type="button" data-close-dialog>Continuar</button>
+      </div>
+      <div class="account-panel" id="account-panel" hidden>
+        <div class="account-avatar" id="account-avatar" aria-hidden="true">U</div>
+        <p class="dialog-kicker">Conta ativa</p>
+        <h2 id="account-name">Usuário</h2>
+        <p id="account-email">usuario@exemplo.com</p>
+        <dl><div><dt>Perfil</dt><dd id="account-role">Participante</dd></div><div><dt>Sessão</dt><dd>Ativa neste navegador</dd></div></dl>
+        <button class="button button-secondary full" type="button" id="logout-button">Sair da conta</button>
       </div>
     </dialog>
 

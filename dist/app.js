@@ -6,7 +6,13 @@ const areaFilter = document.querySelector('#area-filter');
 const chips = [...document.querySelectorAll('[data-filter]')];
 const eventCards = [...document.querySelectorAll('.event-card')];
 const emptyState = document.querySelector('#empty-state');
+const loginButton = document.querySelector('.login-button');
 const loginDialog = document.querySelector('#portal-dialog');
+const loginForm = document.querySelector('#login-form');
+const signupForm = document.querySelector('#signup-form');
+const authIntro = document.querySelector('#auth-intro');
+const authSuccess = document.querySelector('#dialog-success');
+const accountPanel = document.querySelector('#account-panel');
 const eventDialog = document.querySelector('#event-dialog');
 const registrationDialog = document.querySelector('#registration-dialog');
 const accessDialog = document.querySelector('#access-dialog');
@@ -125,16 +131,110 @@ function filterEvents() {
   emptyState.hidden = visible !== 0;
 }
 
-function openLogin(title = 'Entre na sua conta', description = 'Acompanhe inscrições, submissões e atividades do evento.') {
-  document.querySelector('#login-form').hidden = false;
-  document.querySelector('#dialog-success').hidden = true;
-  document.querySelector('.portal-dialog .dialog-kicker').hidden = false;
-  document.querySelector('.portal-dialog .dialog-icon').hidden = false;
-  document.querySelector('.portal-dialog .dialog-footer').hidden = false;
-  document.querySelector('#dialog-title').textContent = title;
-  document.querySelector('#dialog-title').hidden = false;
-  document.querySelector('#dialog-description').textContent = description;
-  document.querySelector('#dialog-description').hidden = false;
+function getUsers() {
+  try {
+    const users = JSON.parse(localStorage.getItem('portal-users'));
+    return Array.isArray(users) ? users : [];
+  } catch {
+    return [];
+  }
+}
+
+function getSession() {
+  try {
+    return JSON.parse(localStorage.getItem('portal-session') || sessionStorage.getItem('portal-session'));
+  } catch {
+    return null;
+  }
+}
+
+async function hashPassword(password) {
+  const data = new TextEncoder().encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function setSession(user, remember = true) {
+  const session = JSON.stringify({ id: user.id, name: user.name, email: user.email, role: user.role });
+  localStorage.removeItem('portal-session');
+  sessionStorage.removeItem('portal-session');
+  (remember ? localStorage : sessionStorage).setItem('portal-session', session);
+}
+
+function clearAuthErrors(form) {
+  form.querySelectorAll('.field-error').forEach((error) => { error.textContent = ''; });
+  form.querySelectorAll('.input-error').forEach((input) => input.classList.remove('input-error'));
+}
+
+function setAuthError(inputId, errorId, message) {
+  const input = document.querySelector(`#${inputId}`);
+  document.querySelector(`#${errorId}`).textContent = message;
+  input?.classList.toggle('input-error', Boolean(message));
+}
+
+function userInitials(name) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+}
+
+function updateAuthButton() {
+  const session = getSession();
+  const label = loginButton.querySelector('.login-label');
+  const avatar = loginButton.querySelector('.login-avatar');
+  loginButton.classList.toggle('signed-in', Boolean(session));
+  label.textContent = session ? session.name.split(' ')[0] : 'Entrar';
+  avatar.hidden = !session;
+  avatar.textContent = session ? userInitials(session.name) : '';
+  loginButton.title = session ? `Conta de ${session.name}` : 'Entrar no portal';
+}
+
+function setAuthMode(mode) {
+  authIntro.hidden = false;
+  accountPanel.hidden = true;
+  authSuccess.hidden = true;
+  document.querySelector('#prototype-auth-note').hidden = false;
+  const signup = mode === 'signup';
+  loginForm.hidden = signup;
+  signupForm.hidden = !signup;
+  document.querySelector('#dialog-title').textContent = signup ? 'Crie sua conta' : 'Entre na sua conta';
+  document.querySelector('#dialog-description').textContent = signup
+    ? 'Cadastre seus dados para acessar as áreas do portal.'
+    : 'Acompanhe inscrições, submissões e atividades do evento.';
+  document.querySelectorAll('[data-auth-mode]').forEach((button) => {
+    const active = button.dataset.authMode === mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  window.setTimeout(() => document.querySelector(signup ? '#signup-name' : '#login-email').focus(), 0);
+}
+
+function showAuthSuccess(title, message) {
+  authIntro.hidden = true;
+  loginForm.hidden = true;
+  signupForm.hidden = true;
+  accountPanel.hidden = true;
+  document.querySelector('#prototype-auth-note').hidden = true;
+  document.querySelector('#auth-success-title').textContent = title;
+  document.querySelector('#auth-success-message').textContent = message;
+  authSuccess.hidden = false;
+}
+
+function showAccount(user) {
+  authIntro.hidden = true;
+  loginForm.hidden = true;
+  signupForm.hidden = true;
+  authSuccess.hidden = true;
+  document.querySelector('#prototype-auth-note').hidden = true;
+  document.querySelector('#account-avatar').textContent = userInitials(user.name);
+  document.querySelector('#account-name').textContent = user.name;
+  document.querySelector('#account-email').textContent = user.email;
+  document.querySelector('#account-role').textContent = user.role;
+  accountPanel.hidden = false;
+}
+
+function openLogin() {
+  const session = getSession();
+  if (session) showAccount(session);
+  else setAuthMode('login');
   loginDialog.showModal();
 }
 
@@ -279,36 +379,97 @@ document.querySelector('#wizard-next').addEventListener('click', () => {
 document.querySelector('#wizard-back').addEventListener('click', () => setWizardStep(Math.max(1, wizardStep - 1)));
 document.querySelectorAll('[data-close-registration]').forEach((button) => button.addEventListener('click', () => registrationDialog.close()));
 
-document.querySelectorAll('[data-open-login]').forEach((button) => button.addEventListener('click', () => openLogin()));
-document.querySelectorAll('[data-role]').forEach((button) => button.addEventListener('click', () => openLogin(`Acessar como ${button.dataset.role}`, 'Entre para continuar para o painel correspondente ao seu perfil.')));
+document.querySelectorAll('[data-open-login]').forEach((button) => button.addEventListener('click', openLogin));
+document.querySelectorAll('[data-role]').forEach((button) => button.addEventListener('click', () => {
+  const session = getSession();
+  if (session) showAccount(session);
+  else {
+    setAuthMode('login');
+    document.querySelector('#dialog-description').textContent = `Entre para acessar o painel de ${button.dataset.role}.`;
+  }
+  loginDialog.showModal();
+}));
 document.querySelectorAll('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => loginDialog.close()));
 
-document.querySelector('#login-form').addEventListener('submit', (event) => {
+document.querySelectorAll('[data-auth-mode]').forEach((button) => button.addEventListener('click', () => setAuthMode(button.dataset.authMode)));
+
+loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const email = document.querySelector('#login-email');
   const password = document.querySelector('#login-password');
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
-  const passwordValid = password.value.length >= 6;
-  document.querySelector('#login-email-error').textContent = emailValid ? '' : 'Informe um e-mail válido, como nome@exemplo.com.';
-  document.querySelector('#login-password-error').textContent = passwordValid ? '' : 'A senha precisa ter pelo menos 6 caracteres.';
-  email.classList.toggle('input-error', !emailValid);
-  password.classList.toggle('input-error', !passwordValid);
-  if (!emailValid || !passwordValid) {
-    (emailValid ? password : email).focus();
+  const normalizedEmail = email.value.trim().toLowerCase();
+  clearAuthErrors(loginForm);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    setAuthError('login-email', 'login-email-error', 'Informe um e-mail válido, como nome@exemplo.com.');
+    email.focus();
     return;
   }
-  document.querySelector('#login-form').hidden = true;
-  document.querySelector('.portal-dialog .dialog-kicker').hidden = true;
-  document.querySelector('.portal-dialog .dialog-icon').hidden = true;
-  document.querySelector('.portal-dialog .dialog-footer').hidden = true;
-  document.querySelector('#dialog-title').hidden = true;
-  document.querySelector('#dialog-description').hidden = true;
-  document.querySelector('#dialog-success').hidden = false;
+  const user = getUsers().find((item) => item.email === normalizedEmail);
+  const passwordHash = await hashPassword(password.value);
+  if (!user || user.passwordHash !== passwordHash) {
+    setAuthError('login-password', 'login-password-error', 'E-mail ou senha não conferem. Crie uma conta primeiro, se necessário.');
+    password.focus();
+    return;
+  }
+  setSession(user, document.querySelector('#remember-login').checked);
+  updateAuthButton();
+  showAuthSuccess(`Olá, ${user.name.split(' ')[0]}!`, 'Sua sessão foi iniciada e o portal reconheceu o seu perfil.');
 });
+
+signupForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  clearAuthErrors(signupForm);
+  const name = document.querySelector('#signup-name').value.trim().replace(/\s+/g, ' ');
+  const email = document.querySelector('#signup-email').value.trim().toLowerCase();
+  const password = document.querySelector('#signup-password').value;
+  const confirm = document.querySelector('#signup-confirm').value;
+  const role = document.querySelector('#signup-role').value;
+  const terms = document.querySelector('#signup-terms').checked;
+  let firstInvalid = null;
+
+  if (name.length < 3 || !name.includes(' ')) { setAuthError('signup-name', 'signup-name-error', 'Informe seu nome e sobrenome.'); firstInvalid ||= 'signup-name'; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setAuthError('signup-email', 'signup-email-error', 'Informe um e-mail válido.'); firstInvalid ||= 'signup-email'; }
+  else if (getUsers().some((user) => user.email === email)) { setAuthError('signup-email', 'signup-email-error', 'Já existe uma conta com este e-mail.'); firstInvalid ||= 'signup-email'; }
+  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) { setAuthError('signup-password', 'signup-password-error', 'Use 8 caracteres ou mais, incluindo uma letra e um número.'); firstInvalid ||= 'signup-password'; }
+  if (confirm !== password) { setAuthError('signup-confirm', 'signup-confirm-error', 'As senhas precisam ser iguais.'); firstInvalid ||= 'signup-confirm'; }
+  if (!terms) { document.querySelector('#signup-terms-error').textContent = 'Confirme o uso demonstrativo dos dados para continuar.'; firstInvalid ||= 'signup-terms'; }
+  if (firstInvalid) { document.querySelector(`#${firstInvalid}`).focus(); return; }
+
+  const user = { id: `user-${Date.now()}`, name, email, role, passwordHash: await hashPassword(password), createdAt: new Date().toISOString() };
+  const users = getUsers();
+  users.push(user);
+  localStorage.setItem('portal-users', JSON.stringify(users));
+  setSession(user, true);
+  updateAuthButton();
+  showAuthSuccess('Conta criada!', `Seu perfil de ${role} está pronto para uso neste navegador.`);
+});
+
+document.querySelector('#forgot-password').addEventListener('click', () => {
+  const email = document.querySelector('#login-email').value.trim().toLowerCase();
+  if (!email) {
+    setAuthError('login-email', 'login-email-error', 'Informe o e-mail da conta para continuar.');
+    document.querySelector('#login-email').focus();
+    return;
+  }
+  showToast(getUsers().some((user) => user.email === email)
+    ? 'Recuperação simulada: nenhum e-mail real será enviado.'
+    : 'Não encontramos uma conta com esse e-mail neste navegador.');
+});
+
+document.querySelector('#logout-button').addEventListener('click', () => {
+  localStorage.removeItem('portal-session');
+  sessionStorage.removeItem('portal-session');
+  updateAuthButton();
+  loginDialog.close();
+  showToast('Você saiu da conta.');
+});
+
 loginDialog.addEventListener('close', () => {
-  document.querySelector('#login-form').reset();
-  document.querySelectorAll('.field-error').forEach((error) => { if (error.id !== 'category-error') error.textContent = ''; });
-  document.querySelectorAll('.input-error').forEach((input) => input.classList.remove('input-error'));
+  loginForm.reset();
+  signupForm.reset();
+  clearAuthErrors(loginForm);
+  clearAuthErrors(signupForm);
+  document.querySelector('#signup-terms-error').textContent = '';
 });
 
 document.querySelector('[data-open-access]').addEventListener('click', () => accessDialog.showModal());
@@ -356,3 +517,4 @@ try {
 } catch {
   applyAccessPreferences();
 }
+updateAuthButton();
