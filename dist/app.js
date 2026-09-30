@@ -559,16 +559,6 @@ document.querySelector('#wizard-back').addEventListener('click', () => setWizard
 document.querySelectorAll('[data-close-registration]').forEach((button) => button.addEventListener('click', () => registrationDialog.close()));
 
 document.querySelectorAll('[data-open-login]').forEach((button) => button.addEventListener('click', openLogin));
-document.querySelectorAll('[data-role]').forEach((button) => button.addEventListener('click', () => {
-  const session = getSession();
-  if (session) {
-    window.location.href = './minha-area.html';
-    return;
-  }
-  setAuthMode('login');
-  document.querySelector('#dialog-description').textContent = `Entre para acessar o painel de ${button.dataset.role}.`;
-  loginDialog.showModal();
-}));
 document.querySelectorAll('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => loginDialog.close()));
 
 document.querySelectorAll('[data-auth-mode]').forEach((button) => button.addEventListener('click', () => setAuthMode(button.dataset.authMode)));
