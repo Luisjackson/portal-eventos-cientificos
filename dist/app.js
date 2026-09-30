@@ -295,7 +295,6 @@ function setAuthMode(mode) {
   accountPanel.hidden = true;
   authSuccess.hidden = true;
   document.querySelector('#recovery-form').hidden = true;
-  document.querySelector('#prototype-auth-note').hidden = false;
   const signup = mode === 'signup';
   loginForm.hidden = signup;
   signupForm.hidden = !signup;
@@ -317,7 +316,6 @@ function showAuthSuccess(title, message) {
   signupForm.hidden = true;
   document.querySelector('#recovery-form').hidden = true;
   accountPanel.hidden = true;
-  document.querySelector('#prototype-auth-note').hidden = true;
   document.querySelector('#auth-success-title').textContent = title;
   document.querySelector('#auth-success-message').textContent = message;
   authSuccess.hidden = false;
@@ -329,7 +327,6 @@ function showAccount(user) {
   signupForm.hidden = true;
   document.querySelector('#recovery-form').hidden = true;
   authSuccess.hidden = true;
-  document.querySelector('#prototype-auth-note').hidden = true;
   document.querySelector('#account-avatar').textContent = userInitials(user.name);
   document.querySelector('#account-name').textContent = user.name;
   document.querySelector('#account-email').textContent = user.email;
@@ -343,7 +340,6 @@ function showPasswordRecovery() {
   signupForm.hidden = true;
   authSuccess.hidden = true;
   accountPanel.hidden = true;
-  document.querySelector('#prototype-auth-note').hidden = true;
   document.querySelector('#dialog-title').textContent = 'Crie uma nova senha';
   document.querySelector('#dialog-description').textContent = 'Digite a nova senha para recuperar o acesso à sua conta.';
   document.querySelector('.auth-tabs').hidden = true;
