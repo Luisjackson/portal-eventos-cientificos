@@ -48,7 +48,7 @@
           <a class="active" href="#inicio">Início</a>
           <a href="#eventos">Eventos</a>
           <a href="#prazos">Prazos</a>
-          <a href="#minha-area" data-open-dashboard>Minha área</a>
+          <a href="./minha-area.html">Minha área</a>
         </nav>
 
         <button class="button button-ghost login-button" type="button" data-open-login>
@@ -272,43 +272,6 @@
         </div>
       </section>
 
-      <section id="minha-area" class="section user-dashboard" hidden aria-labelledby="dashboard-title">
-        <div class="shell">
-          <div class="dashboard-heading">
-            <div>
-              <span class="eyebrow dark"><span></span> Área do usuário</span>
-              <h2 id="dashboard-title">Olá, <span id="dashboard-first-name">participante</span>!</h2>
-              <p>Acompanhe suas inscrições e atividades científicas em um só lugar.</p>
-            </div>
-            <button class="button button-secondary" type="button" id="dashboard-account">Minha conta</button>
-          </div>
-
-          <div class="dashboard-stats" aria-label="Resumo das atividades">
-            <article><span id="dashboard-registration-count">0</span><p>eventos inscritos</p></article>
-            <article><span id="dashboard-hours-count">0h</span><p>atividades extras</p></article>
-            <article><span id="dashboard-certificate-count">0</span><p>certificados disponíveis</p></article>
-          </div>
-
-          <div class="dashboard-layout">
-            <section class="dashboard-card" aria-labelledby="my-events-title">
-              <div class="dashboard-card-heading"><div><p>Minha agenda</p><h3 id="my-events-title">Eventos inscritos</h3></div><a href="#eventos">Encontrar eventos</a></div>
-              <div class="dashboard-loading" id="dashboard-loading" aria-live="polite" hidden>Carregando suas inscrições…</div>
-              <div class="dashboard-events" id="dashboard-events" aria-live="polite"></div>
-              <div class="dashboard-empty" id="dashboard-empty" hidden>
-                <span aria-hidden="true">◎</span><h4>Sua agenda ainda está vazia</h4><p>Escolha um evento e conclua a inscrição para acompanhá-lo aqui.</p><a class="button button-primary" href="#eventos">Explorar eventos</a>
-              </div>
-              <div class="dashboard-error" id="dashboard-error" role="alert" hidden></div>
-            </section>
-
-            <aside class="dashboard-card dashboard-profile" aria-labelledby="dashboard-profile-title">
-              <div class="dashboard-profile-avatar" id="dashboard-avatar" aria-hidden="true">U</div>
-              <p>Perfil conectado</p><h3 id="dashboard-profile-title">Usuário</h3><span id="dashboard-profile-email">usuario@exemplo.com</span>
-              <dl><div><dt>Perfil</dt><dd id="dashboard-profile-role">Participante</dd></div><div><dt>Conta</dt><dd>Verificada pelo Supabase</dd></div></dl>
-              <p class="dashboard-hint">Seus dados e inscrições são protegidos pelas políticas de acesso do banco.</p>
-            </aside>
-          </div>
-        </div>
-      </section>
     </main>
 
     <footer class="site-footer">
@@ -318,7 +281,7 @@
           <span>Portal de <strong>Eventos Científicos</strong></span>
         </a>
         <p>Conhecimento que circula. Pessoas que se conectam.</p>
-        <nav aria-label="Links do rodapé"><a href="#eventos">Eventos</a><a href="#prazos">Chamadas</a><a href="#minha-area" data-open-dashboard>Minha área</a></nav>
+        <nav aria-label="Links do rodapé"><a href="#eventos">Eventos</a><a href="#prazos">Chamadas</a><a href="./minha-area.html">Minha área</a></nav>
       </div>
       <div class="shell footer-bottom"><span>© 2026 Portal de Eventos Científicos</span><span>Protótipo acadêmico · UNEB</span></div>
     </footer>
@@ -377,7 +340,7 @@
         <h2 id="account-name">Usuário</h2>
         <p id="account-email">usuario@exemplo.com</p>
         <dl><div><dt>Perfil</dt><dd id="account-role">Participante</dd></div><div><dt>Sessão</dt><dd>Sincronizada com o Supabase</dd></div></dl>
-        <button class="button button-primary full" type="button" id="open-dashboard-button">Acessar minha área</button>
+        <a class="button button-primary full" href="./minha-area.html">Acessar minha área</a>
         <button class="button button-secondary full" type="button" id="logout-button">Sair da conta</button>
       </div>
     </dialog>
@@ -440,7 +403,7 @@
         </section>
         <div class="wizard-actions"><button class="button button-secondary" id="wizard-back" type="button" hidden>Voltar</button><button class="button button-primary" id="wizard-next" type="button">Continuar</button></div>
       </form>
-      <div class="registration-success" id="registration-success" hidden><span>✓</span><h3>Inscrição registrada!</h3><p>O evento e as atividades já aparecem na sua área. O pagamento Pix permanece demonstrativo.</p><div class="mock-code" id="registration-code">INSCRIÇÃO</div><button class="button button-primary full" type="button" id="view-dashboard-registration">Ver minha área</button></div>
+      <div class="registration-success" id="registration-success" hidden><span>✓</span><h3>Inscrição registrada!</h3><p>O evento e as atividades já aparecem na sua área. O pagamento Pix permanece demonstrativo.</p><div class="mock-code" id="registration-code">INSCRIÇÃO</div><a class="button button-primary full" href="./minha-area.html">Ver minha área</a></div>
     </dialog>
 
     <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title">

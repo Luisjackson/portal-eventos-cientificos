@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Área do usuário do Portal de Eventos Científicos." />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Minha área | Portal de Eventos Científicos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=__BUILD_VERSION__" />
+  </head>
+  <body class="dashboard-page">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="./index.html" aria-label="Portal de Eventos Científicos - início">
+          <svg class="brand-mark" aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg>
+          <span>Portal de <strong>Eventos Científicos</strong></span>
+        </a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span class="sr-only">Abrir menu</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+        <nav id="main-nav" class="main-nav" aria-label="Navegação principal">
+          <a href="./index.html">Início</a><a href="./index.html#eventos">Eventos</a><a href="./index.html#prazos">Prazos</a><a class="active" href="./minha-area.html" aria-current="page">Minha área</a>
+        </nav>
+        <a class="button button-ghost dashboard-session-link" id="dashboard-session-link" href="#dashboard-profile-card"><span class="login-avatar" id="dashboard-header-avatar" aria-hidden="true">U</span><span id="dashboard-header-label">Conta</span></a>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="section auth-required" id="auth-required" hidden>
+        <div class="shell"><div class="dashboard-card auth-required-card"><span aria-hidden="true">🔒</span><h1>Entre para acessar sua área</h1><p>Suas inscrições e atividades ficam disponíveis somente depois que você entra na conta.</p><a class="button button-primary" href="./index.html?login=1&amp;redirect=minha-area">Entrar ou criar conta</a></div></div>
+      </section>
+
+      <section class="section user-dashboard dashboard-page-content" id="dashboard-content" hidden aria-labelledby="dashboard-title">
+        <div class="shell">
+          <div class="dashboard-heading">
+            <div><span class="eyebrow dark"><span></span> Área do usuário</span><h1 id="dashboard-title">Olá, <span id="dashboard-first-name">participante</span>!</h1><p>Acompanhe suas inscrições e atividades científicas em um só lugar.</p></div>
+            <a class="button button-primary" href="./index.html#eventos">Encontrar novos eventos</a>
+          </div>
+          <div class="dashboard-stats" aria-label="Resumo das atividades">
+            <article><span id="dashboard-registration-count">0</span><p>eventos inscritos</p></article><article><span id="dashboard-hours-count">0h</span><p>atividades extras</p></article><article><span id="dashboard-certificate-count">0</span><p>certificados disponíveis</p></article>
+          </div>
+          <div class="dashboard-layout">
+            <section class="dashboard-card" aria-labelledby="my-events-title">
+              <div class="dashboard-card-heading"><div><p>Minha agenda</p><h2 id="my-events-title">Eventos inscritos</h2></div><a href="./index.html#eventos">Encontrar eventos</a></div>
+              <div class="dashboard-loading" id="dashboard-loading" aria-live="polite">Carregando suas inscrições…</div>
+              <div class="dashboard-events" id="dashboard-events" aria-live="polite"></div>
+              <div class="dashboard-empty" id="dashboard-empty" hidden><span aria-hidden="true">◎</span><h3>Sua agenda ainda está vazia</h3><p>Escolha um evento e conclua a inscrição para acompanhá-lo aqui.</p><a class="button button-primary" href="./index.html#eventos">Explorar eventos</a></div>
+              <div class="dashboard-error" id="dashboard-error" role="alert" hidden></div>
+            </section>
+            <aside class="dashboard-card dashboard-profile" id="dashboard-profile-card" aria-labelledby="dashboard-profile-title">
+              <div class="dashboard-profile-avatar" id="dashboard-avatar" aria-hidden="true">U</div><p>Perfil conectado</p><h2 id="dashboard-profile-title">Usuário</h2><span id="dashboard-profile-email">usuario@exemplo.com</span>
+              <dl><div><dt>Perfil</dt><dd id="dashboard-profile-role">Participante</dd></div><div><dt>Conta</dt><dd>Verificada pelo Supabase</dd></div></dl>
+              <p class="dashboard-hint">Seus dados e inscrições são protegidos pelas políticas de acesso do banco.</p><button class="button button-secondary full" id="dashboard-logout" type="button">Sair da conta</button>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="shell footer-inner"><a class="brand footer-brand" href="./index.html"><svg class="brand-mark" aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg><span>Portal de <strong>Eventos Científicos</strong></span></a><p>Conhecimento que circula. Pessoas que se conectam.</p><nav aria-label="Links do rodapé"><a href="./index.html#eventos">Eventos</a><a href="./index.html#prazos">Chamadas</a><a href="./minha-area.html">Minha área</a></nav></div><div class="shell footer-bottom"><span>© 2026 Portal de Eventos Científicos</span><span>Protótipo acadêmico · UNEB</span></div></footer>
+
+    <dialog class="cancel-dialog" id="cancel-registration-dialog" aria-labelledby="cancel-dialog-title">
+      <button class="dialog-close" type="button" aria-label="Fechar confirmação" data-close-cancel>×</button><p class="dialog-kicker">Cancelar inscrição</p><h2 id="cancel-dialog-title">Deseja sair deste evento?</h2><p>Você removerá <strong id="cancel-event-name">este evento</strong> da sua área. Para participar novamente, será necessário fazer uma nova inscrição.</p><div class="cancel-dialog-actions"><button class="button button-secondary" type="button" data-close-cancel>Manter inscrição</button><button class="button button-danger" type="button" id="confirm-cancel-registration">Cancelar inscrição</button></div><p class="field-error" id="cancel-registration-error" aria-live="polite"></p>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script src="./dashboard.js?v=__BUILD_VERSION__"></script>
+  </body>
+</html>

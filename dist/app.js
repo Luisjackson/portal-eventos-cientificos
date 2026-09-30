@@ -16,8 +16,6 @@ const accountPanel = document.querySelector('#account-panel');
 const eventDialog = document.querySelector('#event-dialog');
 const registrationDialog = document.querySelector('#registration-dialog');
 const accessDialog = document.querySelector('#access-dialog');
-const dashboardSection = document.querySelector('#minha-area');
-const dashboardEvents = document.querySelector('#dashboard-events');
 const chatTrigger = document.querySelector('#chat-trigger');
 const chatPanel = document.querySelector('#event-chat');
 const chatMessages = document.querySelector('#chat-messages');
@@ -342,99 +340,6 @@ function resetRegistration() {
   setWizardStep(1);
 }
 
-function setDashboardIdentity(user) {
-  document.querySelector('#dashboard-first-name').textContent = user.name.split(' ')[0];
-  document.querySelector('#dashboard-avatar').textContent = userInitials(user.name);
-  document.querySelector('#dashboard-profile-title').textContent = user.name;
-  document.querySelector('#dashboard-profile-email').textContent = user.email;
-  document.querySelector('#dashboard-profile-role').textContent = user.role;
-}
-
-function renderRegistration(registration) {
-  const event = events[registration.event_name] || {};
-  const card = document.createElement('article');
-  card.className = 'dashboard-event';
-
-  const cover = document.createElement('img');
-  cover.src = event.image || './assets/events/data-science.webp';
-  cover.alt = `Imagem do evento ${registration.event_name}`;
-
-  const content = document.createElement('div');
-  const title = document.createElement('h4');
-  title.textContent = registration.event_name;
-  const meta = document.createElement('div');
-  meta.className = 'dashboard-event-meta';
-  [registration.event_date, registration.event_location, registration.category].forEach((value) => {
-    const item = document.createElement('span');
-    item.textContent = value;
-    meta.append(item);
-  });
-  content.append(title, meta);
-  if (registration.activities?.length) {
-    const activities = document.createElement('p');
-    activities.className = 'dashboard-event-activities';
-    activities.textContent = `Atividades: ${registration.activities.join(', ')}`;
-    content.append(activities);
-  }
-
-  const status = document.createElement('div');
-  status.className = 'dashboard-event-code';
-  const statusLabel = document.createElement('strong');
-  statusLabel.textContent = registration.payment_status === 'paid' ? 'Pagamento confirmado' : 'Pix demonstrativo';
-  const code = document.createElement('span');
-  code.textContent = `#${registration.id.slice(0, 8).toUpperCase()}`;
-  status.append(statusLabel, code);
-  card.append(cover, content, status);
-  return card;
-}
-
-async function loadRegistrations() {
-  const user = getSession();
-  if (!user) return;
-  const loading = document.querySelector('#dashboard-loading');
-  const empty = document.querySelector('#dashboard-empty');
-  const errorPanel = document.querySelector('#dashboard-error');
-  loading.hidden = false;
-  empty.hidden = true;
-  errorPanel.hidden = true;
-  dashboardEvents.replaceChildren();
-
-  const { data, error } = await supabaseClient
-    .from('registrations')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  loading.hidden = true;
-  if (error) {
-    errorPanel.textContent = 'A área do usuário está pronta, mas a tabela de inscrições ainda precisa ser criada no Supabase. Execute o arquivo supabase/schema.sql no SQL Editor.';
-    errorPanel.hidden = false;
-    return;
-  }
-
-  const registrations = data || [];
-  registrations.forEach((registration) => dashboardEvents.append(renderRegistration(registration)));
-  empty.hidden = registrations.length !== 0;
-  document.querySelector('#dashboard-registration-count').textContent = registrations.length;
-  document.querySelector('#dashboard-hours-count').textContent = `${registrations.reduce((total, item) => total + Number(item.activity_hours || 0), 0)}h`;
-  document.querySelector('#dashboard-certificate-count').textContent = registrations.filter((item) => item.certificate_available).length;
-}
-
-async function openDashboard() {
-  const user = getSession();
-  if (!user) {
-    setAuthMode('login');
-    document.querySelector('#dialog-description').textContent = 'Entre para acessar suas inscrições e atividades.';
-    if (!loginDialog.open) loginDialog.showModal();
-    return;
-  }
-  setDashboardIdentity(user);
-  dashboardSection.hidden = false;
-  if (loginDialog.open) loginDialog.close();
-  if (registrationDialog.open) registrationDialog.close();
-  await loadRegistrations();
-  dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 async function saveRegistration() {
   const user = getSession();
   if (!user || !currentRegistrationEvent) return false;
@@ -568,25 +473,16 @@ document.querySelector('#wizard-next').addEventListener('click', async () => {
 });
 document.querySelector('#wizard-back').addEventListener('click', () => setWizardStep(Math.max(1, wizardStep - 1)));
 document.querySelectorAll('[data-close-registration]').forEach((button) => button.addEventListener('click', () => registrationDialog.close()));
-document.querySelector('#view-dashboard-registration').addEventListener('click', openDashboard);
 
 document.querySelectorAll('[data-open-login]').forEach((button) => button.addEventListener('click', openLogin));
-document.querySelectorAll('[data-open-dashboard]').forEach((link) => link.addEventListener('click', (event) => {
-  event.preventDefault();
-  openDashboard();
-}));
-document.querySelector('#open-dashboard-button').addEventListener('click', openDashboard);
-document.querySelector('#dashboard-account').addEventListener('click', openLogin);
 document.querySelectorAll('[data-role]').forEach((button) => button.addEventListener('click', () => {
   const session = getSession();
   if (session) {
-    openDashboard();
+    window.location.href = './minha-area.html';
     return;
   }
-  else {
-    setAuthMode('login');
-    document.querySelector('#dialog-description').textContent = `Entre para acessar o painel de ${button.dataset.role}.`;
-  }
+  setAuthMode('login');
+  document.querySelector('#dialog-description').textContent = `Entre para acessar o painel de ${button.dataset.role}.`;
   loginDialog.showModal();
 }));
 document.querySelectorAll('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => loginDialog.close()));
@@ -619,6 +515,10 @@ loginForm.addEventListener('submit', async (event) => {
   await loadCurrentProfile(data.user);
   const user = getSession();
   updateAuthButton();
+  if (new URLSearchParams(window.location.search).get('redirect') === 'minha-area') {
+    window.location.href = './minha-area.html';
+    return;
+  }
   showAuthSuccess(`Olá, ${user.name.split(' ')[0]}!`, 'Sua sessão foi iniciada e o portal reconheceu o seu perfil.');
 });
 
@@ -659,6 +559,10 @@ signupForm.addEventListener('submit', async (event) => {
     currentAuthUser = data.user;
     await loadCurrentProfile(data.user);
     updateAuthButton();
+    if (new URLSearchParams(window.location.search).get('redirect') === 'minha-area') {
+      window.location.href = './minha-area.html';
+      return;
+    }
     showAuthSuccess('Conta criada!', 'Seu cadastro foi concluído e você já está conectado ao portal.');
   } else {
     showAuthSuccess('Confira seu e-mail', 'Enviamos um link de confirmação. Depois de confirmar, volte ao portal para entrar.');
@@ -710,7 +614,6 @@ document.querySelector('#logout-button').addEventListener('click', async () => {
   }
   currentAuthUser = null;
   currentProfile = null;
-  dashboardSection.hidden = true;
   updateAuthButton();
   loginDialog.close();
   showToast('Você saiu da conta.');
@@ -778,15 +681,7 @@ async function initializeAuth() {
     currentProfile = null;
     updateAuthButton();
     if (currentAuthUser) {
-      loadCurrentProfile(currentAuthUser).then(() => {
-        updateAuthButton();
-        if (!dashboardSection.hidden) {
-          setDashboardIdentity(getSession());
-          loadRegistrations();
-        }
-      });
-    } else {
-      dashboardSection.hidden = true;
+      loadCurrentProfile(currentAuthUser).then(updateAuthButton);
     }
     if (event === 'PASSWORD_RECOVERY') {
       showPasswordRecovery();
@@ -798,7 +693,7 @@ async function initializeAuth() {
   currentAuthUser = session?.user || null;
   await loadCurrentProfile(currentAuthUser);
   updateAuthButton();
-  if (currentAuthUser && window.location.hash === '#minha-area') openDashboard();
+  if (!currentAuthUser && new URLSearchParams(window.location.search).get('login') === '1') openLogin();
 }
 
 initializeAuth();

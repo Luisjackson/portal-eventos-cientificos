@@ -20,6 +20,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [x] Chatbot demonstrativo para dúvidas sobre datas, locais, inscrições, programação e prazos dos eventos cadastrados.
 - [x] Login, criação de conta, sessão persistente e recuperação de senha integrados ao Supabase Auth.
 - [x] Painel do participante com perfil, eventos inscritos, atividades e indicadores de certificados.
+- [x] Página separada “Minha área” e cancelamento seguro de inscrição.
 - [x] QR Code Pix demonstrativo no fluxo de inscrição.
 - [ ] Certificado com código de validação e consulta pública.
 - [ ] Assistente de submissão com salvamento de rascunho.

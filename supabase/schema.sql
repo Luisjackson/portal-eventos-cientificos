@@ -64,7 +64,7 @@ create table if not exists public.registrations (
 
 alter table public.registrations enable row level security;
 revoke all on table public.registrations from anon;
-grant select, insert, update on table public.registrations to authenticated;
+grant select, insert, update, delete on table public.registrations to authenticated;
 
 drop policy if exists "Usuário pode visualizar as próprias inscrições" on public.registrations;
 create policy "Usuário pode visualizar as próprias inscrições"
@@ -81,3 +81,8 @@ create policy "Usuário pode atualizar as próprias inscrições"
 on public.registrations for update to authenticated
 using ((select auth.uid()) = user_id)
 with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Usuário pode cancelar as próprias inscrições" on public.registrations;
+create policy "Usuário pode cancelar as próprias inscrições"
+on public.registrations for delete to authenticated
+using ((select auth.uid()) = user_id);

@@ -7,7 +7,7 @@ Esboço inicial navegável para a atividade de IHC da UNEB. A primeira entrega c
 - cartões de eventos com favoritos e feedback;
 - acesso às áreas de Participante, Autor, Revisor e Comitê Científico;
 - login, cadastro e recuperação de senha integrados ao Supabase Auth;
-- área autenticada com eventos inscritos, atividades e indicadores;
+- página autenticada separada com eventos inscritos, atividades, indicadores e cancelamento de inscrição;
 - inscrição persistida no Supabase e pagamento Pix demonstrativo com QR Code;
 - estados normal, vazio e de sucesso;
 - layout responsivo e navegação por teclado.
@@ -25,6 +25,8 @@ Abra `http://localhost:4173` no navegador.
 O login e o cadastro usam Supabase Auth com e-mail e senha. Nome e perfil são enviados como metadados da conta e, quando a tabela `public.profiles` está configurada, o portal consulta o perfil protegido por Row Level Security. Cadastros públicos podem escolher os perfis Participante ou Autor; Revisor e Comitê científico devem ser atribuídos por um administrador.
 
 Para ativar a persistência de perfis e inscrições, execute [`supabase/schema.sql`](./supabase/schema.sql) no SQL Editor do projeto Supabase. As políticas RLS garantem que cada usuário consulte e altere somente as próprias inscrições.
+
+Se o schema principal já foi executado antes da funcionalidade de cancelamento, execute também [`supabase/migration_cancel_registration.sql`](./supabase/migration_cancel_registration.sql).
 
 ## Estrutura
 
