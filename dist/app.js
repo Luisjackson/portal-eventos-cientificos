@@ -16,6 +16,8 @@ const accountPanel = document.querySelector('#account-panel');
 const eventDialog = document.querySelector('#event-dialog');
 const registrationDialog = document.querySelector('#registration-dialog');
 const accessDialog = document.querySelector('#access-dialog');
+const dashboardSection = document.querySelector('#minha-area');
+const dashboardEvents = document.querySelector('#dashboard-events');
 const chatTrigger = document.querySelector('#chat-trigger');
 const chatPanel = document.querySelector('#event-chat');
 const chatMessages = document.querySelector('#chat-messages');
@@ -38,11 +40,12 @@ let wizardStep = 1;
 let currentChatEvent = null;
 let currentAuthUser = null;
 let currentProfile = null;
+let currentRegistrationEvent = null;
 
 const events = {
-  'Simpósio Brasileiro de Ciência de Dados': { type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'credenciamento às 8h30, palestra de abertura às 10h e sessões técnicas às 14h', contact: 'eventos@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.' },
-  'Congresso Nacional de Inovação em Saúde': { type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'inscrições até 15 de novembro de 2026; chamada de pôsteres até 2 de novembro', registration: 'inscrições abertas no protótipo', program: 'a programação detalhada ainda não foi cadastrada', contact: 'eventos@universidade.br', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.' },
-  'Workshop de Robótica e Sistemas Autônomos': { type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'vagas disponíveis enquanto houver disponibilidade', registration: 'inscrições abertas no protótipo', program: 'atividades práticas de robótica, automação e sistemas autônomos', contact: 'eventos@universidade.br', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.' }
+  'Simpósio Brasileiro de Ciência de Dados': { type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'credenciamento às 8h30, palestra de abertura às 10h e sessões técnicas às 14h', contact: 'eventos@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], image: './assets/events/data-science.webp', description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.' },
+  'Congresso Nacional de Inovação em Saúde': { type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'inscrições até 15 de novembro de 2026; chamada de pôsteres até 2 de novembro', registration: 'inscrições abertas no protótipo', program: 'a programação detalhada ainda não foi cadastrada', contact: 'eventos@universidade.br', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], image: './assets/events/health-innovation.webp', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.' },
+  'Workshop de Robótica e Sistemas Autônomos': { type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'vagas disponíveis enquanto houver disponibilidade', registration: 'inscrições abertas no protótipo', program: 'atividades práticas de robótica, automação e sistemas autônomos', contact: 'eventos@universidade.br', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], image: './assets/events/robotics-workshop.webp', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.' }
 };
 
 function addChatMessage(text, sender = 'bot') {
@@ -285,6 +288,7 @@ function openLogin() {
 
 function openEvent(name) {
   const event = events[name] || events['Simpósio Brasileiro de Ciência de Dados'];
+  currentRegistrationEvent = name;
   const loading = document.querySelector('#event-dialog-loading');
   const content = document.querySelector('#event-dialog-content');
   loading.hidden = false;
@@ -334,7 +338,140 @@ function resetRegistration() {
   document.querySelector('#registration-form').hidden = false;
   document.querySelector('#registration-success').hidden = true;
   document.querySelector('#category-error').textContent = '';
+  document.querySelector('#registration-save-error').textContent = '';
   setWizardStep(1);
+}
+
+function setDashboardIdentity(user) {
+  document.querySelector('#dashboard-first-name').textContent = user.name.split(' ')[0];
+  document.querySelector('#dashboard-avatar').textContent = userInitials(user.name);
+  document.querySelector('#dashboard-profile-title').textContent = user.name;
+  document.querySelector('#dashboard-profile-email').textContent = user.email;
+  document.querySelector('#dashboard-profile-role').textContent = user.role;
+}
+
+function renderRegistration(registration) {
+  const event = events[registration.event_name] || {};
+  const card = document.createElement('article');
+  card.className = 'dashboard-event';
+
+  const cover = document.createElement('img');
+  cover.src = event.image || './assets/events/data-science.webp';
+  cover.alt = `Imagem do evento ${registration.event_name}`;
+
+  const content = document.createElement('div');
+  const title = document.createElement('h4');
+  title.textContent = registration.event_name;
+  const meta = document.createElement('div');
+  meta.className = 'dashboard-event-meta';
+  [registration.event_date, registration.event_location, registration.category].forEach((value) => {
+    const item = document.createElement('span');
+    item.textContent = value;
+    meta.append(item);
+  });
+  content.append(title, meta);
+  if (registration.activities?.length) {
+    const activities = document.createElement('p');
+    activities.className = 'dashboard-event-activities';
+    activities.textContent = `Atividades: ${registration.activities.join(', ')}`;
+    content.append(activities);
+  }
+
+  const status = document.createElement('div');
+  status.className = 'dashboard-event-code';
+  const statusLabel = document.createElement('strong');
+  statusLabel.textContent = registration.payment_status === 'paid' ? 'Pagamento confirmado' : 'Pix demonstrativo';
+  const code = document.createElement('span');
+  code.textContent = `#${registration.id.slice(0, 8).toUpperCase()}`;
+  status.append(statusLabel, code);
+  card.append(cover, content, status);
+  return card;
+}
+
+async function loadRegistrations() {
+  const user = getSession();
+  if (!user) return;
+  const loading = document.querySelector('#dashboard-loading');
+  const empty = document.querySelector('#dashboard-empty');
+  const errorPanel = document.querySelector('#dashboard-error');
+  loading.hidden = false;
+  empty.hidden = true;
+  errorPanel.hidden = true;
+  dashboardEvents.replaceChildren();
+
+  const { data, error } = await supabaseClient
+    .from('registrations')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  loading.hidden = true;
+  if (error) {
+    errorPanel.textContent = 'A área do usuário está pronta, mas a tabela de inscrições ainda precisa ser criada no Supabase. Execute o arquivo supabase/schema.sql no SQL Editor.';
+    errorPanel.hidden = false;
+    return;
+  }
+
+  const registrations = data || [];
+  registrations.forEach((registration) => dashboardEvents.append(renderRegistration(registration)));
+  empty.hidden = registrations.length !== 0;
+  document.querySelector('#dashboard-registration-count').textContent = registrations.length;
+  document.querySelector('#dashboard-hours-count').textContent = `${registrations.reduce((total, item) => total + Number(item.activity_hours || 0), 0)}h`;
+  document.querySelector('#dashboard-certificate-count').textContent = registrations.filter((item) => item.certificate_available).length;
+}
+
+async function openDashboard() {
+  const user = getSession();
+  if (!user) {
+    setAuthMode('login');
+    document.querySelector('#dialog-description').textContent = 'Entre para acessar suas inscrições e atividades.';
+    if (!loginDialog.open) loginDialog.showModal();
+    return;
+  }
+  setDashboardIdentity(user);
+  dashboardSection.hidden = false;
+  if (loginDialog.open) loginDialog.close();
+  if (registrationDialog.open) registrationDialog.close();
+  await loadRegistrations();
+  dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function saveRegistration() {
+  const user = getSession();
+  if (!user || !currentRegistrationEvent) return false;
+  const event = events[currentRegistrationEvent];
+  const category = document.querySelector('input[name="category"]:checked');
+  const activities = [...document.querySelectorAll('input[name="activity"]:checked')];
+  const button = document.querySelector('#wizard-next');
+  const errorPanel = document.querySelector('#registration-save-error');
+  const record = {
+    user_id: user.id,
+    event_name: currentRegistrationEvent,
+    event_date: event.date,
+    event_location: event.location,
+    category: category.value,
+    activities: activities.map((item) => item.value),
+    activity_hours: activities.reduce((total, item) => total + Number(item.dataset.hours), 0),
+    amount: Number(category.dataset.price),
+    payment_method: 'pix',
+    payment_status: 'pending'
+  };
+
+  errorPanel.textContent = '';
+  button.disabled = true;
+  button.textContent = 'Registrando...';
+  const { data, error } = await supabaseClient
+    .from('registrations')
+    .upsert(record, { onConflict: 'user_id,event_name' })
+    .select()
+    .single();
+  button.disabled = false;
+  button.textContent = 'Confirmar inscrição';
+  if (error) {
+    errorPanel.textContent = 'Não foi possível registrar. Confirme se o arquivo supabase/schema.sql foi executado no Supabase.';
+    return false;
+  }
+  document.querySelector('#registration-code').textContent = `#${data.id.slice(0, 8).toUpperCase()}`;
+  return true;
 }
 
 function saveAccessPreferences() {
@@ -404,11 +541,17 @@ document.querySelectorAll('[data-event]').forEach((button) => button.addEventLis
 document.querySelectorAll('[data-close-event]').forEach((button) => button.addEventListener('click', () => eventDialog.close()));
 document.querySelector('[data-start-registration]').addEventListener('click', () => {
   eventDialog.close();
+  if (!getSession()) {
+    setAuthMode('login');
+    document.querySelector('#dialog-description').textContent = 'Entre ou crie sua conta para se inscrever neste evento.';
+    loginDialog.showModal();
+    return;
+  }
   resetRegistration();
   registrationDialog.showModal();
 });
 
-document.querySelector('#wizard-next').addEventListener('click', () => {
+document.querySelector('#wizard-next').addEventListener('click', async () => {
   if (wizardStep === 1 && !document.querySelector('input[name="category"]:checked')) {
     document.querySelector('#category-error').textContent = 'Escolha uma categoria para continuar.';
     document.querySelector('input[name="category"]').focus();
@@ -417,17 +560,29 @@ document.querySelector('#wizard-next').addEventListener('click', () => {
   document.querySelector('#category-error').textContent = '';
   if (wizardStep < 3) setWizardStep(wizardStep + 1);
   else {
+    const saved = await saveRegistration();
+    if (!saved) return;
     document.querySelector('#registration-form').hidden = true;
     document.querySelector('#registration-success').hidden = false;
   }
 });
 document.querySelector('#wizard-back').addEventListener('click', () => setWizardStep(Math.max(1, wizardStep - 1)));
 document.querySelectorAll('[data-close-registration]').forEach((button) => button.addEventListener('click', () => registrationDialog.close()));
+document.querySelector('#view-dashboard-registration').addEventListener('click', openDashboard);
 
 document.querySelectorAll('[data-open-login]').forEach((button) => button.addEventListener('click', openLogin));
+document.querySelectorAll('[data-open-dashboard]').forEach((link) => link.addEventListener('click', (event) => {
+  event.preventDefault();
+  openDashboard();
+}));
+document.querySelector('#open-dashboard-button').addEventListener('click', openDashboard);
+document.querySelector('#dashboard-account').addEventListener('click', openLogin);
 document.querySelectorAll('[data-role]').forEach((button) => button.addEventListener('click', () => {
   const session = getSession();
-  if (session) showAccount(session);
+  if (session) {
+    openDashboard();
+    return;
+  }
   else {
     setAuthMode('login');
     document.querySelector('#dialog-description').textContent = `Entre para acessar o painel de ${button.dataset.role}.`;
@@ -555,6 +710,7 @@ document.querySelector('#logout-button').addEventListener('click', async () => {
   }
   currentAuthUser = null;
   currentProfile = null;
+  dashboardSection.hidden = true;
   updateAuthButton();
   loginDialog.close();
   showToast('Você saiu da conta.');
@@ -621,7 +777,17 @@ async function initializeAuth() {
     currentAuthUser = nextSession?.user || null;
     currentProfile = null;
     updateAuthButton();
-    if (currentAuthUser) loadCurrentProfile(currentAuthUser).then(updateAuthButton);
+    if (currentAuthUser) {
+      loadCurrentProfile(currentAuthUser).then(() => {
+        updateAuthButton();
+        if (!dashboardSection.hidden) {
+          setDashboardIdentity(getSession());
+          loadRegistrations();
+        }
+      });
+    } else {
+      dashboardSection.hidden = true;
+    }
     if (event === 'PASSWORD_RECOVERY') {
       showPasswordRecovery();
       if (!loginDialog.open) loginDialog.showModal();
@@ -632,6 +798,7 @@ async function initializeAuth() {
   currentAuthUser = session?.user || null;
   await loadCurrentProfile(currentAuthUser);
   updateAuthButton();
+  if (currentAuthUser && window.location.hash === '#minha-area') openDashboard();
 }
 
 initializeAuth();
