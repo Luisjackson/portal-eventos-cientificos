@@ -17,6 +17,13 @@ const statusDetails = {
   rejected: { label: 'Não aceito', step: 3, className: 'danger' },
   final_submitted: { label: 'Versão final enviada', step: 4, className: 'success' }
 };
+const reviewStatusDetails = {
+  assigned: { label: 'Aguardando início', className: 'info' },
+  in_progress: { label: 'Em avaliação', className: 'warning' },
+  completed: { label: 'Parecer enviado', className: 'success' },
+  conflict: { label: 'Conflito declarado', className: 'danger' }
+};
+const recommendationNames = { accept: 'Aceitar', minor_changes: 'Pequenas correções', major_changes: 'Correções substanciais', reject: 'Não aceitar' };
 
 const authRequired = document.querySelector('#auth-required');
 const dashboardContent = document.querySelector('#dashboard-content');
@@ -25,13 +32,17 @@ const cancelDialog = document.querySelector('#cancel-registration-dialog');
 const submissionDialog = document.querySelector('#submission-dialog');
 const finalVersionDialog = document.querySelector('#final-version-dialog');
 const documentDialog = document.querySelector('#document-dialog');
+const reviewDialog = document.querySelector('#review-dialog');
+const conflictDialog = document.querySelector('#conflict-dialog');
 const toast = document.querySelector('#toast');
 let currentUser = null;
 let currentProfile = null;
 let registrations = [];
 let submissions = [];
+let reviews = [];
 let selectedRegistration = null;
 let selectedSubmission = null;
+let selectedReview = null;
 let toastTimer;
 
 function escapeHtml(value = '') {
@@ -61,12 +72,13 @@ function getUserView() {
 }
 
 function activityRoleLabel() {
-  const participant = registrations.length > 0;
-  const author = submissions.length > 0;
-  if (participant && author) return 'Participante e autor';
-  if (author) return 'Autor';
-  if (participant) return 'Participante';
-  return 'Sem atividades';
+  const roles = [];
+  if (registrations.length) roles.push('Participante');
+  if (submissions.length) roles.push('Autor');
+  if (reviews.length) roles.push('Revisor');
+  if (!roles.length) return 'Sem atividades';
+  if (roles.length === 1) return roles[0];
+  return `${roles.slice(0, -1).join(', ')} e ${roles.at(-1)}`;
 }
 
 async function loadProfile() {
@@ -206,7 +218,13 @@ function renderOverview() {
     item.innerHTML = `<span class="overview-symbol article" aria-hidden="true">◇</span><div><strong>${escapeHtml(submission.title)}</strong><p>${escapeHtml(submission.event_name)} · ${detail.label}</p></div>`;
     feed.append(item);
   });
-  empty.hidden = registrations.length + submissions.length !== 0;
+  reviews.filter((review) => ['assigned', 'in_progress'].includes(review.status)).slice(0, 2).forEach((review) => {
+    const item = document.createElement('article');
+    item.className = 'overview-item';
+    item.innerHTML = `<span class="overview-symbol review" aria-hidden="true">✓</span><div><strong>${escapeHtml(review.submission?.title || 'Trabalho atribuído')}</strong><p>Revisão · prazo ${new Date(`${review.deadline}T12:00:00`).toLocaleDateString('pt-BR')}</p></div>`;
+    feed.append(item);
+  });
+  empty.hidden = registrations.length + submissions.length + reviews.length !== 0;
 }
 
 async function loadRegistrations() {
@@ -294,6 +312,138 @@ async function loadSubmissions() {
     empty.hidden = submissions.length !== 0;
   }
   document.querySelector('#dashboard-submission-count').textContent = submissions.length;
+}
+
+function reviewDeadline(deadline) {
+  const date = new Date(`${deadline}T12:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.ceil((date - today) / 86400000);
+  if (days < 0) return { label: `Prazo encerrado há ${Math.abs(days)} dia${Math.abs(days) === 1 ? '' : 's'}`, overdue: true };
+  if (days === 0) return { label: 'Prazo encerra hoje', overdue: false };
+  return { label: `${days} dia${days === 1 ? '' : 's'} restante${days === 1 ? '' : 's'}`, overdue: false };
+}
+
+function renderReview(assignment) {
+  const submission = assignment.submission || {};
+  const status = reviewStatusDetails[assignment.status] || reviewStatusDetails.assigned;
+  const deadline = reviewDeadline(assignment.deadline);
+  const card = document.createElement('article');
+  card.className = 'review-assignment-card';
+  const heading = document.createElement('div');
+  heading.className = 'submission-heading';
+  heading.innerHTML = `<div><span>${escapeHtml(submission.event_name || 'Evento científico')}</span><h3>${escapeHtml(submission.title || 'Trabalho atribuído')}</h3><p>${escapeHtml(submission.track || 'Trilha geral')} · Protocolo #${assignment.id.slice(0, 8).toUpperCase()}</p></div><strong class="submission-status ${status.className}">${status.label}</strong>`;
+  const deadlineRow = document.createElement('div');
+  deadlineRow.className = `review-deadline ${deadline.overdue && assignment.status !== 'completed' ? 'overdue' : ''}`;
+  deadlineRow.innerHTML = `<span>Prazo</span><strong>${new Date(`${assignment.deadline}T12:00:00`).toLocaleDateString('pt-BR')}</strong><small>${deadline.label}</small>`;
+  const abstract = document.createElement('details');
+  abstract.className = 'review-abstract';
+  const summary = document.createElement('summary'); summary.textContent = 'Ler resumo do trabalho';
+  const paragraph = document.createElement('p'); paragraph.textContent = submission.abstract || 'Resumo indisponível.';
+  abstract.append(summary, paragraph);
+  card.append(heading, deadlineRow, abstract);
+
+  if (assignment.status === 'completed') {
+    const result = document.createElement('div');
+    result.className = 'review-result';
+    const average = [assignment.clarity_score, assignment.originality_score, assignment.methodology_score, assignment.relevance_score].reduce((sum, score) => sum + Number(score || 0), 0) / 4;
+    result.innerHTML = `<span>Nota média <strong>${average.toFixed(1)}</strong></span><span>Recomendação <strong>${escapeHtml(recommendationNames[assignment.recommendation] || assignment.recommendation)}</strong></span><p>${escapeHtml(assignment.review_text || '')}</p>`;
+    card.append(result);
+  } else if (assignment.status === 'conflict') {
+    const conflict = document.createElement('p'); conflict.className = 'review-conflict-note'; conflict.textContent = `Conflito informado: ${assignment.conflict_reason}`; card.append(conflict);
+  } else {
+    const actions = document.createElement('div');
+    actions.className = 'review-actions';
+    const download = document.createElement('button'); download.type = 'button'; download.className = 'button button-secondary'; download.textContent = 'Baixar PDF';
+    download.addEventListener('click', () => downloadReviewPdf(assignment));
+    const evaluate = document.createElement('button'); evaluate.type = 'button'; evaluate.className = 'button button-primary'; evaluate.textContent = assignment.status === 'in_progress' ? 'Continuar avaliação' : 'Iniciar avaliação';
+    evaluate.addEventListener('click', () => openReviewDialog(assignment));
+    const conflict = document.createElement('button'); conflict.type = 'button'; conflict.className = 'review-conflict-button'; conflict.textContent = 'Declarar conflito';
+    conflict.addEventListener('click', () => openConflictDialog(assignment));
+    actions.append(download, evaluate, conflict); card.append(actions);
+  }
+  return card;
+}
+
+async function loadReviews() {
+  const list = document.querySelector('#review-list');
+  const empty = document.querySelector('#reviews-empty');
+  const errorPanel = document.querySelector('#reviews-error');
+  const count = document.querySelector('#review-tab-count');
+  list.replaceChildren(); errorPanel.hidden = true;
+  const { data, error } = await supabaseClient.from('review_assignments').select('*, submission:submissions(id, title, event_name, track, abstract, original_file_path, original_file_name, created_at)').order('deadline', { ascending: true });
+  if (error) {
+    reviews = []; empty.hidden = true;
+    errorPanel.textContent = /review_assignments|schema cache|does not exist/i.test(error.message || '') ? 'A área do revisor está pronta no site, mas a migração supabase/migration_reviewer_area.sql ainda precisa ser executada.' : 'Não foi possível carregar as revisões agora.';
+    errorPanel.hidden = false;
+  } else {
+    reviews = data || [];
+    reviews.forEach((assignment) => list.append(renderReview(assignment)));
+    empty.hidden = reviews.length !== 0;
+  }
+  const pending = reviews.filter((item) => ['assigned', 'in_progress'].includes(item.status)).length;
+  count.textContent = pending;
+  count.hidden = pending === 0;
+}
+
+async function downloadReviewPdf(assignment) {
+  const path = assignment.submission?.original_file_path;
+  if (!path) return showToast('O arquivo deste trabalho não está disponível.');
+  const { data, error } = await supabaseClient.storage.from('article-files').createSignedUrl(path, 60);
+  if (error || !data?.signedUrl) return showToast('Não foi possível liberar o PDF para download.');
+  window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+}
+
+async function openReviewDialog(assignment) {
+  selectedReview = assignment;
+  document.querySelector('#review-form').reset();
+  document.querySelector('#review-form-error').textContent = '';
+  document.querySelector('#review-dialog-submission').textContent = `${assignment.submission?.title || 'Trabalho atribuído'} · prazo ${new Date(`${assignment.deadline}T12:00:00`).toLocaleDateString('pt-BR')}`;
+  reviewDialog.showModal();
+  if (assignment.status === 'assigned') {
+    const { error } = await supabaseClient.rpc('start_review', { p_assignment_id: assignment.id });
+    if (!error) assignment.status = 'in_progress';
+  }
+}
+
+async function submitReview(event) {
+  event.preventDefault();
+  if (!selectedReview) return;
+  const errorPanel = document.querySelector('#review-form-error');
+  const text = document.querySelector('#review-text').value.trim();
+  const scores = ['clarity', 'originality', 'methodology', 'relevance'].map((name) => Number(document.querySelector(`#review-${name}`).value));
+  const recommendation = document.querySelector('#review-recommendation').value;
+  if (scores.some((score) => score < 1 || score > 5)) { errorPanel.textContent = 'Dê uma nota de 1 a 5 para todos os critérios.'; return; }
+  if (!recommendation) { errorPanel.textContent = 'Escolha uma recomendação.'; return; }
+  if (text.length < 80) { errorPanel.textContent = 'O parecer precisa ter pelo menos 80 caracteres.'; return; }
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  button.disabled = true; button.textContent = 'Enviando…'; errorPanel.textContent = '';
+  const { error } = await supabaseClient.rpc('submit_review', { p_assignment_id: selectedReview.id, p_clarity_score: scores[0], p_originality_score: scores[1], p_methodology_score: scores[2], p_relevance_score: scores[3], p_recommendation: recommendation, p_review_text: text });
+  button.disabled = false; button.textContent = 'Enviar parecer';
+  if (error) { errorPanel.textContent = 'Não foi possível enviar o parecer. Verifique a migração e tente novamente.'; return; }
+  reviewDialog.close(); selectedReview = null; showToast('Parecer enviado com sucesso.'); await loadReviews(); updateIdentity(); renderOverview();
+}
+
+function openConflictDialog(assignment) {
+  selectedReview = assignment;
+  document.querySelector('#conflict-form').reset();
+  document.querySelector('#conflict-form-error').textContent = '';
+  document.querySelector('#conflict-submission-title').textContent = assignment.submission?.title || 'este trabalho';
+  conflictDialog.showModal();
+}
+
+async function declareConflict(event) {
+  event.preventDefault();
+  if (!selectedReview) return;
+  const reason = document.querySelector('#conflict-reason').value.trim();
+  const errorPanel = document.querySelector('#conflict-form-error');
+  if (reason.length < 20) { errorPanel.textContent = 'Explique o conflito em pelo menos 20 caracteres.'; return; }
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  button.disabled = true; button.textContent = 'Enviando…'; errorPanel.textContent = '';
+  const { error } = await supabaseClient.rpc('declare_review_conflict', { p_assignment_id: selectedReview.id, p_reason: reason });
+  button.disabled = false; button.textContent = 'Declarar conflito';
+  if (error) { errorPanel.textContent = 'Não foi possível registrar o conflito.'; return; }
+  conflictDialog.close(); selectedReview = null; showToast('Conflito declarado. A organização será responsável pela redistribuição.'); await loadReviews(); updateIdentity(); renderOverview();
 }
 
 function openCancelDialog(registration) {
@@ -419,7 +569,7 @@ async function saveProfile(event) {
 async function showAuthenticatedArea(user) {
   currentUser = user; authRequired.hidden = true; dashboardContent.hidden = false;
   await loadProfile(); updateIdentity();
-  await Promise.all([loadRegistrations(), loadSubmissions()]);
+  await Promise.all([loadRegistrations(), loadSubmissions(), loadReviews()]);
   updateIdentity();
   document.querySelectorAll('.dashboard-loading-shared').forEach((item) => { item.hidden = true; });
   renderOverview();
@@ -451,11 +601,15 @@ document.querySelector('#add-coauthor').addEventListener('click', () => addCoaut
 document.querySelector('#submission-form').addEventListener('submit', submitArticle);
 document.querySelectorAll('[data-close-final]').forEach((button) => button.addEventListener('click', () => finalVersionDialog.close()));
 document.querySelector('#final-version-form').addEventListener('submit', submitFinalVersion);
+document.querySelectorAll('[data-close-review]').forEach((button) => button.addEventListener('click', () => reviewDialog.close()));
+document.querySelector('#review-form').addEventListener('submit', submitReview);
+document.querySelectorAll('[data-close-conflict]').forEach((button) => button.addEventListener('click', () => conflictDialog.close()));
+document.querySelector('#conflict-form').addEventListener('submit', declareConflict);
 document.querySelectorAll('[data-close-document]').forEach((button) => button.addEventListener('click', () => documentDialog.close()));
 document.querySelector('#print-document').addEventListener('click', () => window.print());
 document.querySelector('#profile-form').addEventListener('submit', saveProfile);
 
-[cancelDialog, submissionDialog, finalVersionDialog, documentDialog].forEach((dialog) => dialog.addEventListener('click', (event) => {
+[cancelDialog, submissionDialog, finalVersionDialog, documentDialog, reviewDialog, conflictDialog].forEach((dialog) => dialog.addEventListener('click', (event) => {
   const bounds = dialog.getBoundingClientRect();
   const inside = event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
   if (!inside) dialog.close();

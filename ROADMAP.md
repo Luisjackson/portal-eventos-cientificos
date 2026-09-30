@@ -25,7 +25,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [x] Crachá imprimível e certificado com código de validação (consulta pública ainda pendente).
 - [ ] Assistente de submissão com salvamento de rascunho.
 - [x] Cadastro persistente de coautores (validação de conta ainda pendente).
-- [ ] Painel do revisor com artigo, critérios, prazo e declaração de conflito.
+- [x] Painel do revisor com artigo, critérios, notas, parecer, prazo e declaração de conflito.
 - [ ] Seletor de perfil ativo para quem acumula os papéis de autor e revisor.
 - [ ] Estados vazios, de carregamento, sucesso e erro em todos os fluxos.
 
