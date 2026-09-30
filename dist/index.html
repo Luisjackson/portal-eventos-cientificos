@@ -300,9 +300,9 @@
       <form id="login-form" novalidate>
         <label>E-mail institucional ou pessoal<input id="login-email" type="email" placeholder="nome@exemplo.com" aria-describedby="login-email-error" required /></label>
         <p class="field-error" id="login-email-error" aria-live="polite"></p>
-        <label>Senha<input id="login-password" type="password" placeholder="Digite sua senha" minlength="6" aria-describedby="login-password-error" required /></label>
+        <label>Senha<input id="login-password" type="password" autocomplete="current-password" placeholder="Digite sua senha" minlength="8" aria-describedby="login-password-error" required /></label>
         <p class="field-error" id="login-password-error" aria-live="polite"></p>
-        <div class="form-row"><label class="check-label"><input type="checkbox" id="remember-login" /> Lembrar acesso</label><button class="link-button" type="button" id="forgot-password">Esqueci a senha</button></div>
+        <div class="form-row"><span class="session-note">Sessão segura neste navegador</span><button class="link-button" type="button" id="forgot-password">Esqueci a senha</button></div>
         <button class="button button-primary full" type="submit">Entrar</button>
       </form>
       <form id="signup-form" novalidate hidden>
@@ -310,17 +310,25 @@
         <p class="field-error" id="signup-name-error" aria-live="polite"></p>
         <label>E-mail<input id="signup-email" type="email" autocomplete="email" placeholder="nome@exemplo.com" aria-describedby="signup-email-error" required /></label>
         <p class="field-error" id="signup-email-error" aria-live="polite"></p>
-        <label>Perfil principal<select id="signup-role" required><option value="Participante">Participante</option><option value="Autor">Autor</option><option value="Revisor">Revisor</option><option value="Comitê científico">Comitê científico</option></select></label>
+        <label>Perfil principal<select id="signup-role" required><option value="participante">Participante</option><option value="autor">Autor</option></select></label>
+        <small class="password-help">Perfis de revisor e comitê são concedidos pela organização.</small>
         <label>Senha<input id="signup-password" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" aria-describedby="signup-password-help signup-password-error" required /></label>
         <small class="password-help" id="signup-password-help">Use pelo menos 8 caracteres, uma letra e um número.</small>
         <p class="field-error" id="signup-password-error" aria-live="polite"></p>
         <label>Confirmar senha<input id="signup-confirm" type="password" autocomplete="new-password" placeholder="Digite a senha novamente" aria-describedby="signup-confirm-error" required /></label>
         <p class="field-error" id="signup-confirm-error" aria-live="polite"></p>
-        <label class="terms-check"><input id="signup-terms" type="checkbox" /> <span>Concordo com o uso demonstrativo dos dados neste navegador.</span></label>
+        <label class="terms-check"><input id="signup-terms" type="checkbox" /> <span>Concordo com o armazenamento dos meus dados para acesso ao portal.</span></label>
         <p class="field-error" id="signup-terms-error" aria-live="polite"></p>
         <button class="button button-primary full" type="submit">Criar minha conta</button>
       </form>
-      <p class="prototype-auth-note" id="prototype-auth-note">Protótipo acadêmico: a conta será salva somente neste navegador.</p>
+      <p class="prototype-auth-note" id="prototype-auth-note">Acesso protegido pelo Supabase. Nunca compartilhe sua senha.</p>
+      <form id="recovery-form" novalidate hidden>
+        <label>Nova senha<input id="recovery-password" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres" aria-describedby="recovery-password-error" required /></label>
+        <p class="field-error" id="recovery-password-error" aria-live="polite"></p>
+        <label>Confirmar nova senha<input id="recovery-confirm" type="password" autocomplete="new-password" placeholder="Digite a senha novamente" aria-describedby="recovery-confirm-error" required /></label>
+        <p class="field-error" id="recovery-confirm-error" aria-live="polite"></p>
+        <button class="button button-primary full" type="submit">Salvar nova senha</button>
+      </form>
       <div class="dialog-success" id="dialog-success" hidden>
         <span>✓</span><h2 id="auth-success-title">Acesso realizado!</h2><p id="auth-success-message">Sua sessão demonstrativa foi iniciada.</p>
         <button class="button button-primary full" type="button" data-close-dialog>Continuar</button>
@@ -330,7 +338,7 @@
         <p class="dialog-kicker">Conta ativa</p>
         <h2 id="account-name">Usuário</h2>
         <p id="account-email">usuario@exemplo.com</p>
-        <dl><div><dt>Perfil</dt><dd id="account-role">Participante</dd></div><div><dt>Sessão</dt><dd>Ativa neste navegador</dd></div></dl>
+        <dl><div><dt>Perfil</dt><dd id="account-role">Participante</dd></div><div><dt>Sessão</dt><dd>Sincronizada com o Supabase</dd></div></dl>
         <button class="button button-secondary full" type="button" id="logout-button">Sair da conta</button>
       </div>
     </dialog>
@@ -426,6 +434,7 @@
     </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
     <script src="./app.js?v=__BUILD_VERSION__"></script>
   </body>
 </html>
