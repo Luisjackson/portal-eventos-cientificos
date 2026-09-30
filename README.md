@@ -13,6 +13,7 @@ Esboço inicial navegável para a atividade de IHC da UNEB. A primeira entrega c
 - crachá imprimível, certificado condicionado à presença e acompanhamento do pagamento;
 - submissão persistente de artigos em PDF, coautores, situação, parecer e versão final;
 - área do revisor com trabalhos atribuídos, PDF privado, critérios, notas, parecer, conflito e prazos;
+- área protegida da organização e do comitê para eventos, participantes, equipe, múltiplos revisores, decisões, comunicações, publicação de aprovados e emissão de documentos;
 - estados normal, vazio e de sucesso;
 - layout responsivo e navegação por teclado.
 
@@ -39,6 +40,8 @@ Se a área do autor já estava ativa, execute [`supabase/migration_edit_submissi
 Para ativar a área do revisor, execute [`supabase/migration_reviewer_area.sql`](./supabase/migration_reviewer_area.sql). O revisor não escolhe esse papel no cadastro: a organização cria uma atribuição relacionando uma submissão à conta do revisor. Há um exemplo de SQL comentado no final da migração. Cada pessoa acessa somente as próprias atribuições e PDFs.
 
 Neste protótipo, o formulário de nova submissão também permite indicar a conta do revisor pelo e-mail. Depois da migração da área do revisor, execute [`supabase/migration_assign_reviewer_on_submission.sql`](./supabase/migration_assign_reviewer_on_submission.sql) para ativar essa atribuição automática.
+
+Para ativar a gestão da organização, execute [`supabase/migration_committee_area.sql`](./supabase/migration_committee_area.sql). Depois, use o comando comentado no final do arquivo para cadastrar a primeira conta organizadora. A área ficará disponível em `comite.html`; somente membros ativos conseguem consultar ou alterar os dados administrativos.
 
 ## Estrutura
 

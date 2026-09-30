@@ -91,6 +91,42 @@ const events = {
   }
 };
 
+function formatManagedDate(start, end) {
+  if (!start) return '';
+  const format = (value) => new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+  return end && end !== start ? `${format(start)} a ${format(end)}` : format(start);
+}
+
+async function loadPublicManagementData() {
+  const [configurationResult, articleResult] = await Promise.all([
+    supabaseClient.from('event_configurations').select('*').eq('published', true),
+    supabaseClient.rpc('public_approved_articles')
+  ]);
+  if (!configurationResult.error) {
+    (configurationResult.data || []).forEach((configuration) => {
+      const event = events[configuration.event_name];
+      if (!event) return;
+      event.description = configuration.description || event.description;
+      event.location = configuration.location || event.location;
+      event.format = (configuration.format || event.format).toLowerCase();
+      event.date = formatManagedDate(configuration.starts_on, configuration.ends_on) || event.date;
+      if (configuration.submission_deadline) event.deadline = `submissões até ${formatManagedDate(configuration.submission_deadline)}`;
+      if (configuration.contact_email) {
+        event.contactChannels.email = configuration.contact_email;
+        event.contact = configuration.contact_email;
+      }
+      if (configuration.modalities?.length) event.call.modalities = configuration.modalities;
+    });
+  }
+  if (!articleResult.error) {
+    (articleResult.data || []).forEach((article) => {
+      const event = events[article.event_name];
+      if (!event || event.approvedPapers.some((paper) => paper.title === article.title)) return;
+      event.approvedPapers.unshift({ type: article.track || 'Artigo aprovado', title: article.title, authors: article.authors || 'Autoria cadastrada no portal' });
+    });
+  }
+}
+
 function addChatMessage(text, sender = 'bot') {
   const message = document.createElement('div');
   message.className = `chat-message ${sender}`;
@@ -641,8 +677,9 @@ loginForm.addEventListener('submit', async (event) => {
   await loadCurrentProfile(data.user);
   const user = getSession();
   updateAuthButton();
-  if (new URLSearchParams(window.location.search).get('redirect') === 'minha-area') {
-    window.location.href = './minha-area.html';
+  const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
+  if (redirectTarget === 'minha-area' || redirectTarget === 'comite') {
+    window.location.href = redirectTarget === 'comite' ? './comite.html' : './minha-area.html';
     return;
   }
   showAuthSuccess(`Olá, ${user.name.split(' ')[0]}!`, 'Sua sessão foi iniciada e o portal reconheceu o seu perfil.');
@@ -684,8 +721,9 @@ signupForm.addEventListener('submit', async (event) => {
     currentAuthUser = data.user;
     await loadCurrentProfile(data.user);
     updateAuthButton();
-    if (new URLSearchParams(window.location.search).get('redirect') === 'minha-area') {
-      window.location.href = './minha-area.html';
+    const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
+    if (redirectTarget === 'minha-area' || redirectTarget === 'comite') {
+      window.location.href = redirectTarget === 'comite' ? './comite.html' : './minha-area.html';
       return;
     }
     showAuthSuccess('Conta criada!', 'Seu cadastro foi concluído e você já está conectado ao portal.');
@@ -821,4 +859,5 @@ async function initializeAuth() {
   if (!currentAuthUser && new URLSearchParams(window.location.search).get('login') === '1') openLogin();
 }
 
+loadPublicManagementData();
 initializeAuth();

@@ -26,6 +26,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [ ] Assistente de submissão com salvamento de rascunho.
 - [x] Cadastro persistente de coautores (validação de conta ainda pendente).
 - [x] Painel do revisor com artigo, critérios, notas, parecer, prazo e declaração de conflito.
+- [x] Painel da organização e do comitê com configuração de evento, participantes, equipe, distribuição para múltiplos revisores, acompanhamento, decisão, comunicação, publicação e documentos.
 - [ ] Seletor de perfil ativo para quem acumula os papéis de autor e revisor.
 - [ ] Estados vazios, de carregamento, sucesso e erro em todos os fluxos.
 

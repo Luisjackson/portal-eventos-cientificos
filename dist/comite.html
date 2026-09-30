@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Área da organização e do comitê científico." />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Organização e comitê | Portal de Eventos Científicos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=__BUILD_VERSION__" />
+  </head>
+  <body class="dashboard-page committee-page">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <header class="site-header"><div class="shell header-inner">
+      <a class="brand" href="./index.html" aria-label="Portal de Eventos Científicos - início"><svg class="brand-mark" aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg><span>Portal de <strong>Eventos Científicos</strong></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span class="sr-only">Abrir menu</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+      <nav id="main-nav" class="main-nav" aria-label="Navegação principal"><a href="./index.html">Início</a><a href="./minha-area.html">Minha área</a><a class="active" href="./comite.html" aria-current="page">Comitê</a></nav>
+      <button class="button button-ghost" id="committee-logout" type="button" hidden>Sair</button>
+    </div></header>
+
+    <main id="conteudo">
+      <section class="section auth-required" id="committee-auth" hidden><div class="shell"><div class="dashboard-card auth-required-card"><span aria-hidden="true">🔒</span><h1>Área restrita à organização</h1><p id="committee-auth-message">Entre com uma conta cadastrada como integrante do comitê.</p><a class="button button-primary" href="./index.html?login=1&amp;redirect=comite">Entrar na conta</a></div></div></section>
+
+      <section class="section committee-dashboard" id="committee-content" hidden><div class="shell">
+        <div class="dashboard-heading"><div><span class="eyebrow dark"><span></span> Gestão científica</span><h1>Organização e comitê</h1><p>Configure o evento, distribua trabalhos, acompanhe decisões e gerencie participantes.</p></div><a class="button button-secondary" href="./index.html">Ver portal público</a></div>
+        <nav class="dashboard-tabs" aria-label="Seções do comitê"><button class="active" type="button" data-committee-tab="overview">Visão geral</button><button type="button" data-committee-tab="event">Evento</button><button type="button" data-committee-tab="submissions">Submissões e revisões</button><button type="button" data-committee-tab="participants">Participantes</button><button type="button" data-committee-tab="team">Comitê</button></nav>
+
+        <section class="dashboard-panel active" data-committee-panel="overview"><div class="dashboard-stats committee-stats"><article><span id="committee-submission-count">0</span><p>submissões</p></article><article><span id="committee-review-count">0</span><p>revisões concluídas</p></article><article><span id="committee-participant-count">0</span><p>participantes</p></article><article><span id="committee-published-count">0</span><p>artigos divulgados</p></article></div><div class="dashboard-card"><div class="dashboard-card-heading"><div><p>Acompanhamento</p><h2>Situação científica</h2></div></div><div class="committee-status-grid" id="committee-status-grid"></div></div></section>
+
+        <section class="dashboard-panel" data-committee-panel="event" hidden><div class="dashboard-card"><div class="dashboard-card-heading"><div><p>Configuração</p><h2>Evento, prazos e modalidades</h2></div></div><form class="committee-form" id="event-config-form"><label class="wide">Nome do evento<input id="event-config-name" required /></label><label class="wide">Descrição<textarea id="event-config-description" rows="4" required></textarea></label><label>Local<input id="event-config-location" required /></label><label>Formato<select id="event-config-format"><option>Presencial</option><option>Online</option><option>Híbrido</option></select></label><label>Início<input id="event-config-start" type="date" required /></label><label>Encerramento<input id="event-config-end" type="date" required /></label><label>Prazo de submissão<input id="event-config-submission-deadline" type="date" required /></label><label>Prazo de revisão<input id="event-config-review-deadline" type="date" required /></label><label class="wide">Modalidades<input id="event-config-modalities" placeholder="Artigo completo, resumo expandido, pôster" required /><small>Separe as modalidades por vírgulas.</small></label><label class="wide">E-mail de contato<input id="event-config-contact" type="email" required /></label><label class="committee-check wide"><input id="event-config-published" type="checkbox" /> Disponibilizar configuração no portal público</label><p class="field-error wide" id="event-config-error" aria-live="polite"></p><div class="wide"><button class="button button-primary" type="submit">Salvar configuração</button></div></form><div class="committee-event-list" id="committee-event-list"></div></div></section>
+
+        <section class="dashboard-panel" data-committee-panel="submissions" hidden><div class="dashboard-card"><div class="dashboard-card-heading"><div><p>Fluxo científico</p><h2>Submissões, revisões e decisões</h2></div></div><p class="panel-intro">Cada trabalho aceita vários revisores. As mensagens e decisões ficam disponíveis imediatamente para o autor.</p><div class="committee-submission-list" id="committee-submission-list"></div><div class="dashboard-empty" id="committee-submission-empty" hidden><span>◇</span><h3>Nenhuma submissão encontrada</h3></div><div class="dashboard-error" id="committee-submission-error" hidden></div></div></section>
+
+        <section class="dashboard-panel" data-committee-panel="participants" hidden><div class="dashboard-card"><div class="dashboard-card-heading"><div><p>Credenciamento</p><h2>Participantes, pagamentos e documentos</h2></div></div><div class="committee-participant-list" id="committee-participant-list"></div><div class="dashboard-empty" id="committee-participant-empty" hidden><span>◎</span><h3>Nenhum participante inscrito</h3></div></div></section>
+
+        <section class="dashboard-panel" data-committee-panel="team" hidden><div class="dashboard-layout committee-team-layout"><section class="dashboard-card"><div class="dashboard-card-heading"><div><p>Equipe</p><h2>Gerir organização e comitê</h2></div></div><form class="committee-form compact" id="committee-member-form"><label class="wide">E-mail da conta<input id="committee-member-email" type="email" required /></label><label>Papel<select id="committee-member-role"><option value="committee">Comitê científico</option><option value="organizer">Organização</option></select></label><label class="committee-check"><input id="committee-member-active" type="checkbox" checked /> Membro ativo</label><p class="field-error wide" id="committee-member-error" aria-live="polite"></p><div class="wide"><button class="button button-primary" type="submit">Adicionar ou atualizar</button></div></form></section><aside class="dashboard-card"><p class="panel-intro">Membros cadastrados</p><div class="committee-member-list" id="committee-member-list"></div></aside></div></section>
+      </div></section>
+    </main>
+
+    <footer class="site-footer"><div class="shell footer-inner"><a class="brand footer-brand" href="./index.html"><svg class="brand-mark" aria-hidden="true" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2.8"><ellipse cx="24" cy="24" rx="20" ry="8" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)" /><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)" /></g><circle cx="24" cy="24" r="4.4" fill="currentColor" /></svg><span>Portal de <strong>Eventos Científicos</strong></span></a><p>Gestão acadêmica com transparência e rastreabilidade.</p><nav><a href="./index.html">Portal público</a><a href="./minha-area.html">Minha área</a></nav></div></footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script><script src="./committee.js?v=__BUILD_VERSION__"></script>
+  </body>
+</html>

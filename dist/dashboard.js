@@ -154,8 +154,9 @@ function renderRegistration(registration) {
   const code = document.createElement('span');
   code.textContent = `#${registration.id.slice(0, 8).toUpperCase()}`;
   const badge = document.createElement('button');
-  badge.className = 'mini-action'; badge.type = 'button'; badge.textContent = 'Ver crachá';
-  badge.addEventListener('click', () => openDocument('badge', registration));
+  badge.className = 'mini-action'; badge.type = 'button'; badge.textContent = registration.badge_issued ? 'Ver crachá' : 'Crachá aguardando emissão';
+  badge.disabled = !registration.badge_issued;
+  if (registration.badge_issued) badge.addEventListener('click', () => openDocument('badge', registration));
   const cancel = document.createElement('button');
   cancel.className = 'cancel-registration-button'; cancel.type = 'button'; cancel.textContent = 'Cancelar inscrição';
   cancel.addEventListener('click', () => openCancelDialog(registration));
@@ -170,11 +171,12 @@ function renderDocuments() {
   grid.replaceChildren();
   registrations.forEach((registration) => {
     const card = document.createElement('article');
-    card.className = 'document-card';
-    card.innerHTML = `<div class="document-icon" aria-hidden="true">▣</div><div><span>Crachá do participante</span><h3>${escapeHtml(registration.event_name)}</h3><p>Código #${registration.id.slice(0, 8).toUpperCase()}</p></div>`;
+    card.className = `document-card ${registration.badge_issued ? '' : 'locked'}`;
+    card.innerHTML = `<div class="document-icon" aria-hidden="true">▣</div><div><span>Crachá do participante</span><h3>${escapeHtml(registration.event_name)}</h3><p>${registration.badge_issued ? `Código #${registration.id.slice(0, 8).toUpperCase()}` : 'Aguardando emissão pela organização'}</p></div>`;
     const badgeButton = document.createElement('button');
-    badgeButton.className = 'button button-secondary'; badgeButton.type = 'button'; badgeButton.textContent = 'Abrir crachá';
-    badgeButton.addEventListener('click', () => openDocument('badge', registration));
+    badgeButton.className = 'button button-secondary'; badgeButton.type = 'button'; badgeButton.textContent = registration.badge_issued ? 'Abrir crachá' : 'Ainda indisponível';
+    badgeButton.disabled = !registration.badge_issued;
+    if (registration.badge_issued) badgeButton.addEventListener('click', () => openDocument('badge', registration));
     card.append(badgeButton); grid.append(card);
 
     const certificate = document.createElement('article');
@@ -283,6 +285,13 @@ function renderSubmission(submission) {
     const pending = document.createElement('p');
     pending.className = 'review-pending'; pending.textContent = 'O parecer aparecerá aqui quando a avaliação for concluída.'; card.append(pending);
   }
+  const messages = submission.submission_messages || [];
+  if (messages.length) {
+    const communication = document.createElement('section');
+    communication.className = 'author-communication';
+    communication.innerHTML = `<span>Comunicações da organização</span>${messages.map((message) => `<article><p>${escapeHtml(message.message)}</p><small>${new Date(message.created_at).toLocaleString('pt-BR')}</small></article>`).join('')}`;
+    card.append(communication);
+  }
   const editButton = document.createElement('button');
   editButton.className = 'button button-secondary submission-edit-button'; editButton.type = 'button';
   editButton.textContent = 'Editar submissão';
@@ -305,7 +314,10 @@ async function loadSubmissions() {
   const empty = document.querySelector('#submissions-empty');
   const errorPanel = document.querySelector('#submissions-error');
   list.replaceChildren(); errorPanel.hidden = true;
-  const { data, error } = await supabaseClient.from('submissions').select('*, coauthors(*)').order('created_at', { ascending: false });
+  let { data, error } = await supabaseClient.from('submissions').select('*, coauthors(*), submission_messages(*)').order('created_at', { ascending: false });
+  if (error && /submission_messages|relationship|schema cache/i.test(error.message || '')) {
+    ({ data, error } = await supabaseClient.from('submissions').select('*, coauthors(*)').order('created_at', { ascending: false }));
+  }
   if (error) {
     submissions = [];
     if (error.code === '42P01' || /submissions/i.test(error.message || '')) {
