@@ -4,7 +4,7 @@ Esboço inicial navegável para a atividade de IHC da UNEB. A primeira entrega c
 
 - descoberta de eventos por busca, área e modalidade;
 - agenda de chamadas com prazo aberto;
-- programação e chamada de trabalhos específicas para cada evento;
+- programação, chamada, orientações, prazos, trabalhos aprovados e contatos específicos para cada evento;
 - cartões de eventos com favoritos e feedback;
 - acesso às áreas de Participante, Autor, Revisor e Comitê Científico;
 - login, cadastro e recuperação de senha integrados ao Supabase Auth;

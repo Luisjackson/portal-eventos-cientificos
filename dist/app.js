@@ -50,7 +50,12 @@ const events = {
       { day: '12 NOV', time: '16:30', title: 'Painel sobre IA responsável', place: 'Auditório central' }
     ],
     deadlines: [{ date: '08 OUT', label: 'Submissão de artigos completos' }, { date: '28 OUT', label: 'Divulgação dos resultados' }, { date: '05 NOV', label: 'Envio da versão final' }],
-    call: { status: 'Chamada aberta', title: 'Artigos completos e resumos expandidos', description: 'A chamada recebe pesquisas concluídas ou em andamento sobre ciência de dados, inteligência artificial responsável e visualização de informações.', modalities: ['Artigo completo · 8 a 12 páginas', 'Resumo expandido · 4 a 6 páginas'], rules: 'Envio em PDF, sem identificação dos autores, seguindo o modelo da chamada. Cada trabalho pode cadastrar até cinco coautores.' }
+    call: { status: 'Chamada aberta', title: 'Artigos completos e resumos expandidos', description: 'A chamada recebe pesquisas concluídas ou em andamento sobre ciência de dados, inteligência artificial responsável e visualização de informações.', modalities: ['Artigo completo · 8 a 12 páginas', 'Resumo expandido · 4 a 6 páginas'], guidelines: ['Enviar arquivo em PDF sem nomes ou identificação dos autores.', 'Utilizar fonte de 10 a 12 pontos e incluir resumo, método, resultados e referências.', 'Cadastrar todos os coautores antes de concluir a submissão.'] },
+    approvedPapers: [
+      { type: 'Artigo completo', title: 'Visualização acessível de dados públicos', authors: 'Ana Souza, Carlos Lima e Marina Reis' },
+      { type: 'Resumo expandido', title: 'Detecção de vieses em modelos educacionais', authors: 'João Santos e Beatriz Rocha' }
+    ],
+    contactChannels: { email: 'dados2026@universidade.br', phone: '+557130002026', phoneLabel: '(71) 3000-2026', service: 'Segunda a sexta, das 9h às 17h' }
   },
   'Congresso Nacional de Inovação em Saúde': {
     type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'chamada de pôsteres até 2 de novembro de 2026', registration: 'inscrições abertas no protótipo', program: 'no dia 22, abertura às 9h, mesa de saúde digital às 10h30, pôsteres às 14h e debate sobre inovação no SUS às 16h', contact: 'saudeinovacao@congresso.org.br · (81) 3200-1188', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], image: './assets/events/health-innovation.webp', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.',
@@ -61,7 +66,12 @@ const events = {
       { day: '22 NOV', time: '16:00', title: 'Debate: inovação e acesso no SUS', place: 'Sala Capibaribe' }
     ],
     deadlines: [{ date: '02 NOV', label: 'Envio de pôsteres científicos' }, { date: '10 NOV', label: 'Resultado das avaliações' }, { date: '15 NOV', label: 'Inscrição de autores aprovados' }],
-    call: { status: 'Chamada aberta', title: 'Pôsteres científicos e relatos de experiência', description: 'Podem ser enviados estudos de inovação clínica, saúde digital, biotecnologia e ampliação do acesso aos serviços de saúde.', modalities: ['Pôster científico · resumo de até 500 palavras', 'Relato de experiência · 3 a 5 páginas'], rules: 'O arquivo deve estar em PDF e apresentar objetivo, método, resultados e considerações finais. Trabalhos com dados de pacientes devem declarar aprovação ética.' }
+    call: { status: 'Chamada aberta', title: 'Pôsteres científicos e relatos de experiência', description: 'Podem ser enviados estudos de inovação clínica, saúde digital, biotecnologia e ampliação do acesso aos serviços de saúde.', modalities: ['Pôster científico · resumo de até 500 palavras', 'Relato de experiência · 3 a 5 páginas'], guidelines: ['Organizar o texto em objetivo, método, resultados e considerações finais.', 'Declarar aprovação ética quando o estudo utilizar dados de pacientes.', 'Enviar o documento em PDF com identificação dos autores.'] },
+    approvedPapers: [
+      { type: 'Pôster científico', title: 'Telemonitoramento de pacientes em áreas rurais', authors: 'Larissa Melo, Paulo Nunes e Carla Dias' },
+      { type: 'Relato de experiência', title: 'Prontuário acessível em unidades de atenção básica', authors: 'Rafael Costa e Juliana Alves' }
+    ],
+    contactChannels: { email: 'saudeinovacao@congresso.org.br', phone: '+558132001188', phoneLabel: '(81) 3200-1188', service: 'Segunda a sexta, das 8h às 16h' }
   },
   'Workshop de Robótica e Sistemas Autônomos': {
     type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'propostas de projetos até 20 de novembro de 2026', registration: 'inscrições abertas no protótipo', program: 'credenciamento às 8h, oficina de sensores às 9h, desafio de robôs às 13h30 e mostra de projetos às 16h', contact: 'robotica@workshop.org.br · (75) 3224-5090', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], image: './assets/events/robotics-workshop.webp', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.',
@@ -72,7 +82,12 @@ const events = {
       { day: '05 DEZ', time: '16:00', title: 'Mostra de projetos e encerramento', place: 'Auditório principal' }
     ],
     deadlines: [{ date: '20 NOV', label: 'Envio de propostas de projetos' }, { date: '26 NOV', label: 'Divulgação das equipes selecionadas' }, { date: '30 NOV', label: 'Confirmação de participação' }],
-    call: { status: 'Chamada aberta', title: 'Projetos e demonstrações de robótica', description: 'A organização selecionará protótipos, demonstrações e relatos técnicos relacionados a robótica educacional, automação e sistemas autônomos.', modalities: ['Projeto demonstrável · resumo de 2 páginas', 'Relato técnico · 4 a 6 páginas'], rules: 'A proposta deve informar os equipamentos necessários, requisitos de segurança e quantidade de integrantes da equipe. O envio deve ser feito em PDF.' }
+    call: { status: 'Chamada aberta', title: 'Projetos e demonstrações de robótica', description: 'A organização selecionará protótipos, demonstrações e relatos técnicos relacionados a robótica educacional, automação e sistemas autônomos.', modalities: ['Projeto demonstrável · resumo de 2 páginas', 'Relato técnico · 4 a 6 páginas'], guidelines: ['Informar equipamentos, consumo elétrico e espaço necessários para a demonstração.', 'Descrever riscos e medidas de segurança do protótipo.', 'Enviar PDF com integrantes da equipe e um link opcional para vídeo.'] },
+    approvedPapers: [
+      { type: 'Projeto demonstrável', title: 'Robô móvel para inspeção de ambientes escolares', authors: 'Felipe Lima, Sara Gomes e Hugo Matos' },
+      { type: 'Relato técnico', title: 'Braço colaborativo de baixo custo para ensino', authors: 'Luana Reis e Pedro Oliveira' }
+    ],
+    contactChannels: { email: 'robotica@workshop.org.br', phone: '+557532245090', phoneLabel: '(75) 3224-5090', service: 'Segunda a sexta, das 13h às 18h' }
   }
 };
 
@@ -330,11 +345,12 @@ function openEvent(name) {
     document.querySelector('#event-dialog-location').textContent = event.location;
     document.querySelector('#event-dialog-format').textContent = event.format[0].toUpperCase() + event.format.slice(1);
     document.querySelector('#event-dialog-description').textContent = event.description;
-    document.querySelector('#event-dialog-contact').textContent = `Secretaria do evento · ${event.contact}`;
     document.querySelector('#registration-title').textContent = name;
     renderEventProgram(event);
     renderEventDeadlines(event);
     renderEventCall(event);
+    renderApprovedPapers(event);
+    renderEventContacts(event);
     loading.hidden = true;
     content.hidden = false;
     eventDialog.setAttribute('aria-busy', 'false');
@@ -380,7 +396,6 @@ function renderEventCall(event) {
   document.querySelector('#event-call-status').textContent = event.call.status;
   document.querySelector('#event-call-title').textContent = event.call.title;
   document.querySelector('#event-call-description').textContent = event.call.description;
-  document.querySelector('#event-call-rules').textContent = event.call.rules;
   const list = document.querySelector('#event-call-modalities');
   list.replaceChildren();
   event.call.modalities.forEach((modality) => {
@@ -388,6 +403,50 @@ function renderEventCall(event) {
     item.textContent = modality;
     list.append(item);
   });
+  const guidelines = document.querySelector('#event-call-guidelines');
+  guidelines.replaceChildren();
+  event.call.guidelines.forEach((guideline) => {
+    const item = document.createElement('li');
+    item.textContent = guideline;
+    guidelines.append(item);
+  });
+}
+
+function renderApprovedPapers(event) {
+  const list = document.querySelector('#event-approved-papers');
+  list.replaceChildren();
+  event.approvedPapers.forEach((paper) => {
+    const article = document.createElement('article');
+    article.className = 'approved-paper';
+    const type = document.createElement('span');
+    type.textContent = paper.type;
+    const title = document.createElement('strong');
+    title.textContent = paper.title;
+    const authors = document.createElement('p');
+    authors.textContent = paper.authors;
+    article.append(type, title, authors);
+    list.append(article);
+  });
+}
+
+function renderEventContacts(event) {
+  const channels = document.querySelector('#event-contact-channels');
+  channels.replaceChildren();
+  const email = document.createElement('a');
+  email.className = 'contact-channel';
+  email.href = `mailto:${event.contactChannels.email}`;
+  email.innerHTML = '<span aria-hidden="true">@</span><div><small>E-mail da secretaria</small><strong></strong></div>';
+  email.querySelector('strong').textContent = event.contactChannels.email;
+  const phone = document.createElement('a');
+  phone.className = 'contact-channel';
+  phone.href = `tel:${event.contactChannels.phone}`;
+  phone.innerHTML = '<span aria-hidden="true">☎</span><div><small>Telefone</small><strong></strong></div>';
+  phone.querySelector('strong').textContent = event.contactChannels.phoneLabel;
+  const service = document.createElement('div');
+  service.className = 'contact-channel';
+  service.innerHTML = '<span aria-hidden="true">◷</span><div><small>Atendimento</small><strong></strong></div>';
+  service.querySelector('strong').textContent = event.contactChannels.service;
+  channels.append(email, phone, service);
 }
 
 function setWizardStep(step) {
