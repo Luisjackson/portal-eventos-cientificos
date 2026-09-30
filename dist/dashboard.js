@@ -487,12 +487,17 @@ function openSubmission(submission = null) {
   document.querySelector('#coauthor-list').replaceChildren();
   document.querySelector('#submission-form-error').textContent = '';
   const fileInput = document.querySelector('#submission-file');
+  const reviewerField = document.querySelector('#reviewer-assignment-field');
+  const reviewerInput = document.querySelector('#submission-reviewer-email');
   const editing = Boolean(submission);
   document.querySelector('#submission-dialog-title').textContent = editing ? 'Editar submissão' : 'Submeter novo artigo';
   document.querySelector('#submission-dialog-description').textContent = editing ? 'Atualize os dados abaixo. O código e as atribuições deste artigo serão preservados.' : 'Preencha os dados e envie o manuscrito em PDF.';
   document.querySelector('#submission-submit-button').textContent = editing ? 'Salvar alterações' : 'Enviar artigo';
   document.querySelector('#submission-file-help').textContent = editing ? `PDF atual: ${submission.original_file_name || 'artigo.pdf'}. Selecione outro somente se quiser substituí-lo.` : 'Arquivo PDF de até 10 MB.';
   fileInput.required = !editing;
+  reviewerField.hidden = editing;
+  reviewerInput.required = !editing;
+  reviewerInput.disabled = editing;
   if (editing) {
     document.querySelector('#submission-event').value = submission.event_name;
     document.querySelector('#submission-title').value = submission.title;
@@ -520,6 +525,7 @@ async function submitArticle(event) {
     email: row.querySelector('[data-coauthor-email]').value.trim().toLowerCase(),
     institution: row.querySelector('[data-coauthor-institution]').value.trim()
   }));
+  const reviewerEmail = document.querySelector('#submission-reviewer-email').value.trim().toLowerCase();
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true; button.textContent = 'Enviando…'; errorPanel.textContent = '';
   if (editingSubmission) {
@@ -557,6 +563,19 @@ async function submitArticle(event) {
     showToast(coauthorError ? 'Artigo atualizado, mas não foi possível salvar todos os coautores.' : 'Submissão atualizada com sucesso.');
     await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions'); return;
   }
+  if (!reviewerEmail) {
+    errorPanel.textContent = 'Informe o e-mail da pessoa que revisará o artigo.';
+    button.disabled = false; button.textContent = 'Enviar artigo'; return;
+  }
+  const { data: reviewerExists, error: reviewerCheckError } = await supabaseClient.rpc('reviewer_account_exists', { p_reviewer_email: reviewerEmail });
+  if (reviewerCheckError) {
+    errorPanel.textContent = 'Execute a migração migration_assign_reviewer_on_submission.sql no Supabase antes de atribuir o revisor.';
+    button.disabled = false; button.textContent = 'Enviar artigo'; return;
+  }
+  if (!reviewerExists) {
+    errorPanel.textContent = 'Não encontramos outra conta cadastrada com esse e-mail. O autor não pode revisar o próprio artigo.';
+    button.disabled = false; button.textContent = 'Enviar artigo'; return;
+  }
   const submissionId = crypto.randomUUID();
   const storagePath = `${currentUser.id}/${submissionId}/original.pdf`;
   const { error: uploadError } = await supabaseClient.storage.from('article-files').upload(storagePath, file, { contentType: 'application/pdf', upsert: false });
@@ -581,8 +600,14 @@ async function submitArticle(event) {
     const { error: coauthorError } = await supabaseClient.from('coauthors').insert(coauthors.map((coauthor) => ({ ...coauthor, submission_id: submissionId, owner_id: currentUser.id })));
     if (coauthorError) showToast('Artigo enviado, mas não foi possível salvar todos os coautores.');
   }
+  const { error: assignmentError } = await supabaseClient.rpc('assign_submission_reviewer', { p_submission_id: submissionId, p_reviewer_email: reviewerEmail });
+  if (assignmentError) {
+    button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close(); editingSubmission = null;
+    showToast('Artigo criado, mas a atribuição falhou. Verifique a migração no Supabase.');
+    await loadSubmissions(); renderOverview(); switchTab('submissions'); return;
+  }
   button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close(); editingSubmission = null;
-  showToast('Artigo submetido com sucesso.'); await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions');
+  showToast('Artigo submetido e atribuído ao revisor.'); await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions');
 }
 
 function openFinalVersion(submission) {

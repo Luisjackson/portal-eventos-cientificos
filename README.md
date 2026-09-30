@@ -38,6 +38,8 @@ Se a área do autor já estava ativa, execute [`supabase/migration_edit_submissi
 
 Para ativar a área do revisor, execute [`supabase/migration_reviewer_area.sql`](./supabase/migration_reviewer_area.sql). O revisor não escolhe esse papel no cadastro: a organização cria uma atribuição relacionando uma submissão à conta do revisor. Há um exemplo de SQL comentado no final da migração. Cada pessoa acessa somente as próprias atribuições e PDFs.
 
+Neste protótipo, o formulário de nova submissão também permite indicar a conta do revisor pelo e-mail. Depois da migração da área do revisor, execute [`supabase/migration_assign_reviewer_on_submission.sql`](./supabase/migration_assign_reviewer_on_submission.sql) para ativar essa atribuição automática.
+
 ## Estrutura
 
 - `dist/index.html`: estrutura e conteúdo do portal;
