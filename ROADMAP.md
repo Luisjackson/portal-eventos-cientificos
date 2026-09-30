@@ -18,7 +18,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 
 - [x] Inscrição demonstrativa em etapas, com categoria, atividades, carga horária, resumo e Pix simulado.
 - [x] Chatbot demonstrativo para dúvidas sobre datas, locais, inscrições, programação e prazos dos eventos cadastrados.
-- [x] Login e criação de conta demonstrativos, com sessão persistente no navegador e seleção de perfil.
+- [x] Login, criação de conta, sessão persistente e recuperação de senha integrados ao Supabase Auth.
 - [ ] Painel do participante com inscrição, atividades, comprovante, crachá e certificado.
 - [ ] Crachá digital com QR Code demonstrativo.
 - [ ] Certificado com código de validação e consulta pública.
@@ -35,7 +35,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [ ] Consolidação de notas, pareceres e decisão final.
 - [ ] Comunicação de decisões aos autores e controle da versão final.
 - [ ] Gestão de participantes, pagamentos e emissão em lote de crachás e certificados.
-- [ ] Persistência real, autenticação, envio de e-mails e integração de pagamento.
+- [ ] Persistência das inscrições e submissões, SMTP personalizado e integração de pagamento.
 
 ## Artefatos acadêmicos
 
