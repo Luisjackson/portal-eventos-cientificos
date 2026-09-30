@@ -224,7 +224,10 @@ async function initializeCommittee() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session?.user) { authPanel.hidden = false; return; }
   const { data: allowed, error } = await supabaseClient.rpc('is_committee');
-  if (error || !allowed) { document.querySelector('#committee-auth-message').textContent = error ? 'Execute a migração da área do comitê e cadastre sua conta como organizadora.' : 'Sua conta não está cadastrada como integrante ativo da organização ou do comitê.'; authPanel.hidden = false; return; }
+  if (error || !allowed) {
+    document.querySelector('#committee-auth-message').textContent = error ? 'A migração da área do comitê ainda não está disponível para esta conta.' : `A conta ${session.user.email} está conectada, mas não consta como integrante ativo em committee_members.`;
+    authPanel.hidden = false; return;
+  }
   content.hidden = false; document.querySelector('#committee-logout').hidden = false;
   await loadData(); switchTab(location.hash.slice(1) || 'overview');
 }

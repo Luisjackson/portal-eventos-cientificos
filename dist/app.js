@@ -856,7 +856,16 @@ async function initializeAuth() {
   currentAuthUser = session?.user || null;
   await loadCurrentProfile(currentAuthUser);
   updateAuthButton();
-  if (!currentAuthUser && new URLSearchParams(window.location.search).get('login') === '1') openLogin();
+  const query = new URLSearchParams(window.location.search);
+  if (query.get('login') === '1') {
+    const redirectTarget = query.get('redirect');
+    const areaLink = document.querySelector('#account-area-link');
+    if (redirectTarget === 'comite') {
+      areaLink.href = './comite.html';
+      areaLink.textContent = 'Tentar acessar o comitê';
+    }
+    openLogin();
+  }
 }
 
 loadPublicManagementData();
