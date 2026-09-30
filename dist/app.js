@@ -22,10 +22,22 @@ const chatMessages = document.querySelector('#chat-messages');
 const chatForm = document.querySelector('#chat-form');
 const chatInput = document.querySelector('#chat-input');
 const toast = document.querySelector('#toast');
+const SUPABASE_URL = 'https://tgcaycijcaoemaztkwfn.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_s2DegO56caEwHGt2Op_Szg_F3dR6i5c';
+const SITE_URL = 'https://luisjackson.github.io/portal-eventos-cientificos/';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 let selectedType = 'todos';
 let toastTimer;
 let wizardStep = 1;
 let currentChatEvent = null;
+let currentAuthUser = null;
+let currentProfile = null;
 
 const events = {
   'Simpósio Brasileiro de Ciência de Dados': { type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'credenciamento às 8h30, palestra de abertura às 10h e sessões técnicas às 14h', contact: 'eventos@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.' },
@@ -131,34 +143,50 @@ function filterEvents() {
   emptyState.hidden = visible !== 0;
 }
 
-function getUsers() {
-  try {
-    const users = JSON.parse(localStorage.getItem('portal-users'));
-    return Array.isArray(users) ? users : [];
-  } catch {
-    return [];
-  }
-}
-
 function getSession() {
-  try {
-    return JSON.parse(localStorage.getItem('portal-session') || sessionStorage.getItem('portal-session'));
-  } catch {
-    return null;
-  }
+  if (!currentAuthUser) return null;
+  const metadata = currentAuthUser.user_metadata || {};
+  const roleNames = {
+    participante: 'Participante',
+    autor: 'Autor',
+    revisor: 'Revisor',
+    comite: 'Comitê científico'
+  };
+  const storedRole = metadata.role || 'participante';
+  return {
+    id: currentAuthUser.id,
+    name: currentProfile?.full_name || metadata.full_name || currentAuthUser.email?.split('@')[0] || 'Usuário',
+    email: currentAuthUser.email || '',
+    role: roleNames[currentProfile?.role || storedRole] || currentProfile?.role || storedRole
+  };
 }
 
-async function hashPassword(password) {
-  const data = new TextEncoder().encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+async function loadCurrentProfile(user) {
+  currentProfile = null;
+  if (!user) return;
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .select('full_name, role')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (!error && data) currentProfile = data;
 }
 
-function setSession(user, remember = true) {
-  const session = JSON.stringify({ id: user.id, name: user.name, email: user.email, role: user.role });
-  localStorage.removeItem('portal-session');
-  sessionStorage.removeItem('portal-session');
-  (remember ? localStorage : sessionStorage).setItem('portal-session', session);
+function setAuthLoading(form, loading, loadingText) {
+  const button = form.querySelector('button[type="submit"]');
+  form.setAttribute('aria-busy', String(loading));
+  button.disabled = loading;
+  if (!button.dataset.defaultText) button.dataset.defaultText = button.textContent;
+  button.textContent = loading ? loadingText : button.dataset.defaultText;
+}
+
+function authErrorMessage(error, context = 'login') {
+  const message = normalize(error?.message || '');
+  if (context === 'login') return 'E-mail ou senha não conferem.';
+  if (message.includes('already registered') || message.includes('already been registered')) return 'Já existe uma conta com este e-mail.';
+  if (message.includes('password')) return 'A senha não atende aos requisitos de segurança.';
+  if (message.includes('rate limit')) return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente novamente.';
+  return 'Não foi possível concluir agora. Verifique sua conexão e tente novamente.';
 }
 
 function clearAuthErrors(form) {
@@ -191,6 +219,7 @@ function setAuthMode(mode) {
   authIntro.hidden = false;
   accountPanel.hidden = true;
   authSuccess.hidden = true;
+  document.querySelector('#recovery-form').hidden = true;
   document.querySelector('#prototype-auth-note').hidden = false;
   const signup = mode === 'signup';
   loginForm.hidden = signup;
@@ -211,6 +240,7 @@ function showAuthSuccess(title, message) {
   authIntro.hidden = true;
   loginForm.hidden = true;
   signupForm.hidden = true;
+  document.querySelector('#recovery-form').hidden = true;
   accountPanel.hidden = true;
   document.querySelector('#prototype-auth-note').hidden = true;
   document.querySelector('#auth-success-title').textContent = title;
@@ -222,6 +252,7 @@ function showAccount(user) {
   authIntro.hidden = true;
   loginForm.hidden = true;
   signupForm.hidden = true;
+  document.querySelector('#recovery-form').hidden = true;
   authSuccess.hidden = true;
   document.querySelector('#prototype-auth-note').hidden = true;
   document.querySelector('#account-avatar').textContent = userInitials(user.name);
@@ -229,6 +260,20 @@ function showAccount(user) {
   document.querySelector('#account-email').textContent = user.email;
   document.querySelector('#account-role').textContent = user.role;
   accountPanel.hidden = false;
+}
+
+function showPasswordRecovery() {
+  authIntro.hidden = false;
+  loginForm.hidden = true;
+  signupForm.hidden = true;
+  authSuccess.hidden = true;
+  accountPanel.hidden = true;
+  document.querySelector('#prototype-auth-note').hidden = true;
+  document.querySelector('#dialog-title').textContent = 'Crie uma nova senha';
+  document.querySelector('#dialog-description').textContent = 'Digite a nova senha para recuperar o acesso à sua conta.';
+  document.querySelector('.auth-tabs').hidden = true;
+  document.querySelector('#recovery-form').hidden = false;
+  window.setTimeout(() => document.querySelector('#recovery-password').focus(), 0);
 }
 
 function openLogin() {
@@ -404,14 +449,20 @@ loginForm.addEventListener('submit', async (event) => {
     email.focus();
     return;
   }
-  const user = getUsers().find((item) => item.email === normalizedEmail);
-  const passwordHash = await hashPassword(password.value);
-  if (!user || user.passwordHash !== passwordHash) {
-    setAuthError('login-password', 'login-password-error', 'E-mail ou senha não conferem. Crie uma conta primeiro, se necessário.');
+  setAuthLoading(loginForm, true, 'Entrando...');
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: normalizedEmail,
+    password: password.value
+  });
+  setAuthLoading(loginForm, false);
+  if (error) {
+    setAuthError('login-password', 'login-password-error', authErrorMessage(error, 'login'));
     password.focus();
     return;
   }
-  setSession(user, document.querySelector('#remember-login').checked);
+  currentAuthUser = data.user;
+  await loadCurrentProfile(data.user);
+  const user = getSession();
   updateAuthButton();
   showAuthSuccess(`Olá, ${user.name.split(' ')[0]}!`, 'Sua sessão foi iniciada e o portal reconheceu o seu perfil.');
 });
@@ -429,36 +480,81 @@ signupForm.addEventListener('submit', async (event) => {
 
   if (name.length < 3 || !name.includes(' ')) { setAuthError('signup-name', 'signup-name-error', 'Informe seu nome e sobrenome.'); firstInvalid ||= 'signup-name'; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setAuthError('signup-email', 'signup-email-error', 'Informe um e-mail válido.'); firstInvalid ||= 'signup-email'; }
-  else if (getUsers().some((user) => user.email === email)) { setAuthError('signup-email', 'signup-email-error', 'Já existe uma conta com este e-mail.'); firstInvalid ||= 'signup-email'; }
   if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) { setAuthError('signup-password', 'signup-password-error', 'Use 8 caracteres ou mais, incluindo uma letra e um número.'); firstInvalid ||= 'signup-password'; }
   if (confirm !== password) { setAuthError('signup-confirm', 'signup-confirm-error', 'As senhas precisam ser iguais.'); firstInvalid ||= 'signup-confirm'; }
-  if (!terms) { document.querySelector('#signup-terms-error').textContent = 'Confirme o uso demonstrativo dos dados para continuar.'; firstInvalid ||= 'signup-terms'; }
+  if (!terms) { document.querySelector('#signup-terms-error').textContent = 'Confirme o armazenamento dos dados para continuar.'; firstInvalid ||= 'signup-terms'; }
   if (firstInvalid) { document.querySelector(`#${firstInvalid}`).focus(); return; }
 
-  const user = { id: `user-${Date.now()}`, name, email, role, passwordHash: await hashPassword(password), createdAt: new Date().toISOString() };
-  const users = getUsers();
-  users.push(user);
-  localStorage.setItem('portal-users', JSON.stringify(users));
-  setSession(user, true);
-  updateAuthButton();
-  showAuthSuccess('Conta criada!', `Seu perfil de ${role} está pronto para uso neste navegador.`);
+  setAuthLoading(signupForm, true, 'Criando conta...');
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: SITE_URL,
+      data: { full_name: name, role }
+    }
+  });
+  setAuthLoading(signupForm, false);
+  if (error) {
+    setAuthError('signup-email', 'signup-email-error', authErrorMessage(error, 'signup'));
+    document.querySelector('#signup-email').focus();
+    return;
+  }
+  if (data.session) {
+    currentAuthUser = data.user;
+    await loadCurrentProfile(data.user);
+    updateAuthButton();
+    showAuthSuccess('Conta criada!', 'Seu cadastro foi concluído e você já está conectado ao portal.');
+  } else {
+    showAuthSuccess('Confira seu e-mail', 'Enviamos um link de confirmação. Depois de confirmar, volte ao portal para entrar.');
+  }
 });
 
-document.querySelector('#forgot-password').addEventListener('click', () => {
+document.querySelector('#forgot-password').addEventListener('click', async () => {
   const email = document.querySelector('#login-email').value.trim().toLowerCase();
-  if (!email) {
-    setAuthError('login-email', 'login-email-error', 'Informe o e-mail da conta para continuar.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setAuthError('login-email', 'login-email-error', 'Informe um e-mail válido para recuperar a senha.');
     document.querySelector('#login-email').focus();
     return;
   }
-  showToast(getUsers().some((user) => user.email === email)
-    ? 'Recuperação simulada: nenhum e-mail real será enviado.'
-    : 'Não encontramos uma conta com esse e-mail neste navegador.');
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: SITE_URL });
+  showToast(error
+    ? authErrorMessage(error, 'recovery')
+    : 'Se o e-mail estiver cadastrado, você receberá um link de recuperação.');
 });
 
-document.querySelector('#logout-button').addEventListener('click', () => {
-  localStorage.removeItem('portal-session');
-  sessionStorage.removeItem('portal-session');
+document.querySelector('#recovery-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const password = document.querySelector('#recovery-password').value;
+  const confirm = document.querySelector('#recovery-confirm').value;
+  clearAuthErrors(event.currentTarget);
+  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+    setAuthError('recovery-password', 'recovery-password-error', 'Use 8 caracteres ou mais, incluindo uma letra e um número.');
+    return;
+  }
+  if (password !== confirm) {
+    setAuthError('recovery-confirm', 'recovery-confirm-error', 'As senhas precisam ser iguais.');
+    return;
+  }
+  setAuthLoading(event.currentTarget, true, 'Salvando senha...');
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  setAuthLoading(event.currentTarget, false);
+  if (error) {
+    setAuthError('recovery-password', 'recovery-password-error', authErrorMessage(error, 'recovery'));
+    return;
+  }
+  document.querySelector('.auth-tabs').hidden = false;
+  showAuthSuccess('Senha atualizada!', 'Sua nova senha já pode ser usada para entrar no portal.');
+});
+
+document.querySelector('#logout-button').addEventListener('click', async () => {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    showToast('Não foi possível encerrar a sessão. Tente novamente.');
+    return;
+  }
+  currentAuthUser = null;
+  currentProfile = null;
   updateAuthButton();
   loginDialog.close();
   showToast('Você saiu da conta.');
@@ -467,9 +563,12 @@ document.querySelector('#logout-button').addEventListener('click', () => {
 loginDialog.addEventListener('close', () => {
   loginForm.reset();
   signupForm.reset();
+  document.querySelector('#recovery-form').reset();
   clearAuthErrors(loginForm);
   clearAuthErrors(signupForm);
+  clearAuthErrors(document.querySelector('#recovery-form'));
   document.querySelector('#signup-terms-error').textContent = '';
+  document.querySelector('.auth-tabs').hidden = false;
 });
 
 document.querySelector('[data-open-access]').addEventListener('click', () => accessDialog.showModal());
@@ -517,4 +616,22 @@ try {
 } catch {
   applyAccessPreferences();
 }
-updateAuthButton();
+async function initializeAuth() {
+  supabaseClient.auth.onAuthStateChange((event, nextSession) => {
+    currentAuthUser = nextSession?.user || null;
+    currentProfile = null;
+    updateAuthButton();
+    if (currentAuthUser) loadCurrentProfile(currentAuthUser).then(updateAuthButton);
+    if (event === 'PASSWORD_RECOVERY') {
+      showPasswordRecovery();
+      if (!loginDialog.open) loginDialog.showModal();
+    }
+  });
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  currentAuthUser = session?.user || null;
+  await loadCurrentProfile(currentAuthUser);
+  updateAuthButton();
+}
+
+initializeAuth();
