@@ -22,9 +22,9 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [x] Painel do participante com perfil, eventos inscritos, atividades e indicadores de certificados.
 - [x] Página separada “Minha área” e cancelamento seguro de inscrição.
 - [x] QR Code Pix demonstrativo no fluxo de inscrição.
-- [ ] Certificado com código de validação e consulta pública.
+- [x] Crachá imprimível e certificado com código de validação (consulta pública ainda pendente).
 - [ ] Assistente de submissão com salvamento de rascunho.
-- [ ] Cadastro e validação de coautores já inscritos.
+- [x] Cadastro persistente de coautores (validação de conta ainda pendente).
 - [ ] Painel do revisor com artigo, critérios, prazo e declaração de conflito.
 - [ ] Seletor de perfil ativo para quem acumula os papéis de autor e revisor.
 - [ ] Estados vazios, de carregamento, sucesso e erro em todos os fluxos.
@@ -34,10 +34,11 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [ ] Painel do comitê para configurar evento, modalidades e prazos.
 - [ ] Distribuição de cada artigo para mais de um revisor.
 - [ ] Consolidação de notas, pareceres e decisão final.
-- [ ] Comunicação de decisões aos autores e controle da versão final.
+- [x] Exibição de decisão/parecer e envio protegido da versão final pelo autor.
 - [ ] Gestão de participantes, pagamentos e emissão em lote de crachás e certificados.
 - [x] Persistência das inscrições por usuário no Supabase com Row Level Security.
-- [ ] Persistência das submissões, SMTP personalizado e integração de pagamento real.
+- [x] Persistência de submissões e PDFs privados no Supabase com Row Level Security.
+- [ ] SMTP personalizado e integração de pagamento real.
 
 ## Artefatos acadêmicos
 

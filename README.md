@@ -7,8 +7,10 @@ Esboço inicial navegável para a atividade de IHC da UNEB. A primeira entrega c
 - cartões de eventos com favoritos e feedback;
 - acesso às áreas de Participante, Autor, Revisor e Comitê Científico;
 - login, cadastro e recuperação de senha integrados ao Supabase Auth;
-- página autenticada separada com eventos inscritos, atividades, indicadores e cancelamento de inscrição;
+- página autenticada separada com visão geral, perfil editável, eventos inscritos e cancelamento;
 - inscrição persistida no Supabase e pagamento Pix demonstrativo com QR Code;
+- crachá imprimível, certificado condicionado à presença e acompanhamento do pagamento;
+- submissão persistente de artigos em PDF, coautores, situação, parecer e versão final;
 - estados normal, vazio e de sucesso;
 - layout responsivo e navegação por teclado.
 
@@ -28,9 +30,13 @@ Para ativar a persistência de perfis e inscrições, execute [`supabase/schema.
 
 Se o schema principal já foi executado antes da funcionalidade de cancelamento, execute também [`supabase/migration_cancel_registration.sql`](./supabase/migration_cancel_registration.sql).
 
+Para ativar o perfil editável e a área do autor, execute também [`supabase/migration_author_area.sql`](./supabase/migration_author_area.sql). A migração cria as tabelas de submissões e coautores, um bucket privado para os PDFs e políticas RLS. O parecer e a decisão são preenchidos pela organização diretamente no Supabase neste estágio do protótipo.
+
 ## Estrutura
 
 - `dist/index.html`: estrutura e conteúdo do portal;
 - `dist/styles.css`: identidade visual e responsividade;
 - `dist/app.js`: busca, filtros, favoritos e diálogo de acesso;
+- `dist/dashboard.js`: área autenticada do participante e do autor;
+- `supabase/`: schema e migrações do banco;
 - `.openai/hosting.json`: configuração de publicação do protótipo.

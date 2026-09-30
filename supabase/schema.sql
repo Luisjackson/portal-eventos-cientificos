@@ -86,3 +86,6 @@ drop policy if exists "Usuário pode cancelar as próprias inscrições" on publ
 create policy "Usuário pode cancelar as próprias inscrições"
 on public.registrations for delete to authenticated
 using ((select auth.uid()) = user_id);
+
+-- Depois deste schema inicial, execute também migration_author_area.sql para habilitar:
+-- perfil editável, submissões, coautores, pareceres, versão final e PDFs privados.
