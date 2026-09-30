@@ -43,6 +43,7 @@ let reviews = [];
 let selectedRegistration = null;
 let selectedSubmission = null;
 let selectedReview = null;
+let editingSubmission = null;
 let toastTimer;
 
 function escapeHtml(value = '') {
@@ -282,6 +283,11 @@ function renderSubmission(submission) {
     const pending = document.createElement('p');
     pending.className = 'review-pending'; pending.textContent = 'O parecer aparecerá aqui quando a avaliação for concluída.'; card.append(pending);
   }
+  const editButton = document.createElement('button');
+  editButton.className = 'button button-secondary submission-edit-button'; editButton.type = 'button';
+  editButton.textContent = 'Editar submissão';
+  editButton.addEventListener('click', () => openSubmission(submission));
+  card.append(editButton);
   if (['accepted', 'changes_requested'].includes(submission.status)) {
     const finalButton = document.createElement('button');
     finalButton.className = 'button button-primary submission-final-button'; finalButton.type = 'button';
@@ -475,10 +481,25 @@ function addCoauthorRow(values = {}) {
   document.querySelector('#coauthor-list').append(row);
 }
 
-function openSubmission() {
+function openSubmission(submission = null) {
+  editingSubmission = submission;
   document.querySelector('#submission-form').reset();
   document.querySelector('#coauthor-list').replaceChildren();
   document.querySelector('#submission-form-error').textContent = '';
+  const fileInput = document.querySelector('#submission-file');
+  const editing = Boolean(submission);
+  document.querySelector('#submission-dialog-title').textContent = editing ? 'Editar submissão' : 'Submeter novo artigo';
+  document.querySelector('#submission-dialog-description').textContent = editing ? 'Atualize os dados abaixo. O código e as atribuições deste artigo serão preservados.' : 'Preencha os dados e envie o manuscrito em PDF.';
+  document.querySelector('#submission-submit-button').textContent = editing ? 'Salvar alterações' : 'Enviar artigo';
+  document.querySelector('#submission-file-help').textContent = editing ? `PDF atual: ${submission.original_file_name || 'artigo.pdf'}. Selecione outro somente se quiser substituí-lo.` : 'Arquivo PDF de até 10 MB.';
+  fileInput.required = !editing;
+  if (editing) {
+    document.querySelector('#submission-event').value = submission.event_name;
+    document.querySelector('#submission-title').value = submission.title;
+    document.querySelector('#submission-track').value = submission.track;
+    document.querySelector('#submission-abstract').value = submission.abstract;
+    (submission.coauthors || []).forEach((coauthor) => addCoauthorRow(coauthor));
+  }
   submissionDialog.showModal();
 }
 
@@ -492,7 +513,7 @@ async function submitArticle(event) {
   const errorPanel = document.querySelector('#submission-form-error');
   const file = document.querySelector('#submission-file').files[0];
   const abstract = document.querySelector('#submission-abstract').value.trim();
-  if (!validPdf(file)) { errorPanel.textContent = 'Selecione um arquivo PDF de até 10 MB.'; return; }
+  if ((!editingSubmission && !validPdf(file)) || (file && !validPdf(file))) { errorPanel.textContent = 'Selecione um arquivo PDF de até 10 MB.'; return; }
   if (abstract.length < 80) { errorPanel.textContent = 'O resumo precisa ter pelo menos 80 caracteres.'; return; }
   const coauthors = [...document.querySelectorAll('.coauthor-row')].map((row) => ({
     full_name: row.querySelector('[data-coauthor-name]').value.trim(),
@@ -501,6 +522,41 @@ async function submitArticle(event) {
   }));
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true; button.textContent = 'Enviando…'; errorPanel.textContent = '';
+  if (editingSubmission) {
+    const submissionId = editingSubmission.id;
+    const updates = {
+      event_name: document.querySelector('#submission-event').value,
+      title: document.querySelector('#submission-title').value.trim(),
+      track: document.querySelector('#submission-track').value,
+      abstract,
+      updated_at: new Date().toISOString()
+    };
+    if (file) {
+      const storagePath = `${currentUser.id}/${submissionId}/original.pdf`;
+      const { error: uploadError } = await supabaseClient.storage.from('article-files').upload(storagePath, file, { contentType: 'application/pdf', upsert: true });
+      if (uploadError) {
+        errorPanel.textContent = 'Não foi possível substituir o PDF. Tente novamente.';
+        button.disabled = false; button.textContent = 'Salvar alterações'; return;
+      }
+      updates.original_file_path = storagePath;
+      updates.original_file_name = file.name;
+    }
+    const { error: updateError } = await supabaseClient.from('submissions').update(updates).eq('id', submissionId).eq('user_id', currentUser.id);
+    if (updateError) {
+      errorPanel.textContent = 'Não foi possível editar. Execute a migração migration_edit_submissions.sql no Supabase.';
+      button.disabled = false; button.textContent = 'Salvar alterações'; return;
+    }
+    const { error: deleteCoauthorError } = await supabaseClient.from('coauthors').delete().eq('submission_id', submissionId).eq('owner_id', currentUser.id);
+    let coauthorError = deleteCoauthorError;
+    if (!coauthorError && coauthors.length) {
+      const result = await supabaseClient.from('coauthors').insert(coauthors.map((coauthor) => ({ ...coauthor, submission_id: submissionId, owner_id: currentUser.id })));
+      coauthorError = result.error;
+    }
+    button.disabled = false; button.textContent = 'Salvar alterações';
+    submissionDialog.close(); editingSubmission = null;
+    showToast(coauthorError ? 'Artigo atualizado, mas não foi possível salvar todos os coautores.' : 'Submissão atualizada com sucesso.');
+    await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions'); return;
+  }
   const submissionId = crypto.randomUUID();
   const storagePath = `${currentUser.id}/${submissionId}/original.pdf`;
   const { error: uploadError } = await supabaseClient.storage.from('article-files').upload(storagePath, file, { contentType: 'application/pdf', upsert: false });
@@ -525,7 +581,7 @@ async function submitArticle(event) {
     const { error: coauthorError } = await supabaseClient.from('coauthors').insert(coauthors.map((coauthor) => ({ ...coauthor, submission_id: submissionId, owner_id: currentUser.id })));
     if (coauthorError) showToast('Artigo enviado, mas não foi possível salvar todos os coautores.');
   }
-  button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close();
+  button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close(); editingSubmission = null;
   showToast('Artigo submetido com sucesso.'); await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions');
 }
 
@@ -594,9 +650,9 @@ document.querySelector('#dashboard-logout').addEventListener('click', async () =
 });
 document.querySelector('#confirm-cancel-registration').addEventListener('click', cancelRegistration);
 document.querySelectorAll('[data-close-cancel]').forEach((button) => button.addEventListener('click', () => cancelDialog.close()));
-document.querySelector('#new-submission').addEventListener('click', openSubmission);
-document.querySelectorAll('[data-open-submission]').forEach((button) => button.addEventListener('click', openSubmission));
-document.querySelectorAll('[data-close-submission]').forEach((button) => button.addEventListener('click', () => submissionDialog.close()));
+document.querySelector('#new-submission').addEventListener('click', () => openSubmission());
+document.querySelectorAll('[data-open-submission]').forEach((button) => button.addEventListener('click', () => openSubmission()));
+document.querySelectorAll('[data-close-submission]').forEach((button) => button.addEventListener('click', () => { submissionDialog.close(); editingSubmission = null; }));
 document.querySelector('#add-coauthor').addEventListener('click', () => addCoauthorRow());
 document.querySelector('#submission-form').addEventListener('submit', submitArticle);
 document.querySelectorAll('[data-close-final]').forEach((button) => button.addEventListener('click', () => finalVersionDialog.close()));
@@ -608,6 +664,7 @@ document.querySelector('#conflict-form').addEventListener('submit', declareConfl
 document.querySelectorAll('[data-close-document]').forEach((button) => button.addEventListener('click', () => documentDialog.close()));
 document.querySelector('#print-document').addEventListener('click', () => window.print());
 document.querySelector('#profile-form').addEventListener('submit', saveProfile);
+submissionDialog.addEventListener('close', () => { editingSubmission = null; });
 
 [cancelDialog, submissionDialog, finalVersionDialog, documentDialog, reviewDialog, conflictDialog].forEach((dialog) => dialog.addEventListener('click', (event) => {
   const bounds = dialog.getBoundingClientRect();

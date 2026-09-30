@@ -34,6 +34,8 @@ Se o schema principal já foi executado antes da funcionalidade de cancelamento,
 
 Para ativar o perfil editável e a área do autor, execute também [`supabase/migration_author_area.sql`](./supabase/migration_author_area.sql). A migração cria as tabelas de submissões e coautores, um bucket privado para os PDFs e políticas RLS. O parecer e a decisão são preenchidos pela organização diretamente no Supabase neste estágio do protótipo.
 
+Se a área do autor já estava ativa, execute [`supabase/migration_edit_submissions.sql`](./supabase/migration_edit_submissions.sql) para permitir que cada autor altere os dados, coautores e PDF das próprias submissões sem mudar o ID do artigo.
+
 Para ativar a área do revisor, execute [`supabase/migration_reviewer_area.sql`](./supabase/migration_reviewer_area.sql). O revisor não escolhe esse papel no cadastro: a organização cria uma atribuição relacionando uma submissão à conta do revisor. Há um exemplo de SQL comentado no final da migração. Cada pessoa acessa somente as próprias atribuições e PDFs.
 
 ## Estrutura
