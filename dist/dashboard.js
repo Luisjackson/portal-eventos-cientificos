@@ -9,7 +9,6 @@ const eventImages = {
   'Congresso Nacional de Inovação em Saúde': './assets/events/health-innovation.webp',
   'Workshop de Robótica e Sistemas Autônomos': './assets/events/robotics-workshop.webp'
 };
-const roleNames = { participante: 'Participante', autor: 'Autor', revisor: 'Revisor', comite: 'Comitê científico' };
 const statusDetails = {
   submitted: { label: 'Submetido', step: 1, className: 'info' },
   under_review: { label: 'Em avaliação', step: 2, className: 'warning' },
@@ -53,14 +52,21 @@ function showToast(message) {
 function getUserView() {
   if (!currentUser) return null;
   const metadata = currentUser.user_metadata || {};
-  const role = currentProfile?.role || metadata.role || 'participante';
   return {
     name: currentProfile?.full_name || metadata.full_name || currentUser.email?.split('@')[0] || 'Usuário',
     email: currentUser.email || '',
-    role,
     institution: currentProfile?.institution || '',
     bio: currentProfile?.bio || ''
   };
+}
+
+function activityRoleLabel() {
+  const participant = registrations.length > 0;
+  const author = submissions.length > 0;
+  if (participant && author) return 'Participante e autor';
+  if (author) return 'Autor';
+  if (participant) return 'Participante';
+  return 'Sem atividades';
 }
 
 async function loadProfile() {
@@ -80,11 +86,10 @@ function updateIdentity() {
   document.querySelector('#dashboard-header-label').textContent = user.name.split(' ')[0];
   document.querySelector('#dashboard-profile-title').textContent = user.name;
   document.querySelector('#dashboard-profile-email').textContent = user.email;
-  document.querySelector('#dashboard-profile-role').textContent = roleNames[user.role] || user.role;
+  document.querySelector('#dashboard-profile-role').textContent = activityRoleLabel();
   document.querySelector('#profile-full-name').value = user.name;
   document.querySelector('#profile-email').value = user.email;
   document.querySelector('#profile-institution').value = user.institution;
-  document.querySelector('#profile-role').value = ['participante', 'autor'].includes(user.role) ? user.role : 'participante';
   document.querySelector('#profile-bio').value = user.bio;
 }
 
@@ -177,7 +182,7 @@ function openDocument(type, registration) {
   const code = registration.id.slice(0, 8).toUpperCase();
   const printable = document.querySelector('#printable-document');
   if (type === 'badge') {
-    printable.innerHTML = `<article class="badge-document"><div class="document-brand"><span class="atom-symbol">◉</span><span>Portal de <strong>Eventos Científicos</strong></span></div><p>CRACHÁ DO PARTICIPANTE</p><h2 id="document-title">${escapeHtml(user.name)}</h2><span>${escapeHtml(user.institution || roleNames[user.role] || 'Participante')}</span><hr><h3>${escapeHtml(registration.event_name)}</h3><p>${escapeHtml(registration.event_date)} · ${escapeHtml(registration.event_location)}</p><div class="document-code">#${code}</div></article>`;
+    printable.innerHTML = `<article class="badge-document"><div class="document-brand"><span class="atom-symbol">◉</span><span>Portal de <strong>Eventos Científicos</strong></span></div><p>CRACHÁ DO PARTICIPANTE</p><h2 id="document-title">${escapeHtml(user.name)}</h2><span>${escapeHtml(user.institution || 'Participante')}</span><hr><h3>${escapeHtml(registration.event_name)}</h3><p>${escapeHtml(registration.event_date)} · ${escapeHtml(registration.event_location)}</p><div class="document-code">#${code}</div></article>`;
   } else {
     printable.innerHTML = `<article class="certificate-document"><div class="document-brand"><span class="atom-symbol">◉</span><span>Portal de <strong>Eventos Científicos</strong></span></div><p>CERTIFICADO DE PARTICIPAÇÃO</p><h2 id="document-title">Certificamos que <strong>${escapeHtml(user.name)}</strong></h2><p>participou de <strong>${escapeHtml(registration.event_name)}</strong>, realizado em ${escapeHtml(registration.event_date)}, com carga horária de ${Number(registration.activity_hours || 0)} horas.</p><div class="certificate-signature"><span>Comissão organizadora</span><span>Validação #${code}</span></div></article>`;
   }
@@ -307,7 +312,7 @@ async function cancelRegistration() {
   button.disabled = false; button.textContent = 'Cancelar inscrição';
   if (error) { errorPanel.textContent = 'Não foi possível cancelar. Tente novamente.'; return; }
   cancelDialog.close(); selectedRegistration = null; showToast('Inscrição cancelada e removida da sua área.');
-  await loadRegistrations(); renderOverview();
+  await loadRegistrations(); updateIdentity(); renderOverview();
 }
 
 function addCoauthorRow(values = {}) {
@@ -371,7 +376,7 @@ async function submitArticle(event) {
     if (coauthorError) showToast('Artigo enviado, mas não foi possível salvar todos os coautores.');
   }
   button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close();
-  showToast('Artigo submetido com sucesso.'); await loadSubmissions(); renderOverview(); switchTab('submissions');
+  showToast('Artigo submetido com sucesso.'); await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions');
 }
 
 function openFinalVersion(submission) {
@@ -404,7 +409,7 @@ async function saveProfile(event) {
   if (name.length < 3) { errorPanel.textContent = 'Informe seu nome completo.'; return; }
   const button = event.currentTarget.querySelector('button[type="submit"]');
   button.disabled = true; button.textContent = 'Salvando…'; errorPanel.textContent = '';
-  const updates = { full_name: name, institution: document.querySelector('#profile-institution').value.trim(), role: document.querySelector('#profile-role').value, bio: document.querySelector('#profile-bio').value.trim(), updated_at: new Date().toISOString() };
+  const updates = { full_name: name, institution: document.querySelector('#profile-institution').value.trim(), bio: document.querySelector('#profile-bio').value.trim(), updated_at: new Date().toISOString() };
   const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentUser.id);
   button.disabled = false; button.textContent = 'Salvar alterações';
   if (error) { errorPanel.textContent = 'Não foi possível salvar. Execute a migração da área do autor no Supabase.'; return; }
@@ -415,6 +420,7 @@ async function showAuthenticatedArea(user) {
   currentUser = user; authRequired.hidden = true; dashboardContent.hidden = false;
   await loadProfile(); updateIdentity();
   await Promise.all([loadRegistrations(), loadSubmissions()]);
+  updateIdentity();
   document.querySelectorAll('.dashboard-loading-shared').forEach((item) => { item.hidden = true; });
   renderOverview();
   switchTab(location.hash.slice(1) || 'overview', false);

@@ -192,18 +192,11 @@ function filterEvents() {
 function getSession() {
   if (!currentAuthUser) return null;
   const metadata = currentAuthUser.user_metadata || {};
-  const roleNames = {
-    participante: 'Participante',
-    autor: 'Autor',
-    revisor: 'Revisor',
-    comite: 'Comitê científico'
-  };
-  const storedRole = metadata.role || 'participante';
   return {
     id: currentAuthUser.id,
     name: currentProfile?.full_name || metadata.full_name || currentAuthUser.email?.split('@')[0] || 'Usuário',
     email: currentAuthUser.email || '',
-    role: roleNames[currentProfile?.role || storedRole] || currentProfile?.role || storedRole
+    role: 'Participante e autor'
   };
 }
 
@@ -212,7 +205,7 @@ async function loadCurrentProfile(user) {
   if (!user) return;
   const { data, error } = await supabaseClient
     .from('profiles')
-    .select('full_name, role')
+    .select('full_name')
     .eq('id', user.id)
     .maybeSingle();
   if (!error && data) currentProfile = data;
@@ -662,7 +655,6 @@ signupForm.addEventListener('submit', async (event) => {
   const email = document.querySelector('#signup-email').value.trim().toLowerCase();
   const password = document.querySelector('#signup-password').value;
   const confirm = document.querySelector('#signup-confirm').value;
-  const role = document.querySelector('#signup-role').value;
   const terms = document.querySelector('#signup-terms').checked;
   let firstInvalid = null;
 
@@ -679,7 +671,7 @@ signupForm.addEventListener('submit', async (event) => {
     password,
     options: {
       emailRedirectTo: SITE_URL,
-      data: { full_name: name, role }
+      data: { full_name: name }
     }
   });
   setAuthLoading(signupForm, false);

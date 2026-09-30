@@ -25,7 +25,7 @@ Abra `http://localhost:4173` no navegador.
 
 ## Autenticação
 
-O login e o cadastro usam Supabase Auth com e-mail e senha. Nome e perfil são enviados como metadados da conta e, quando a tabela `public.profiles` está configurada, o portal consulta o perfil protegido por Row Level Security. Cadastros públicos podem escolher os perfis Participante ou Autor; Revisor e Comitê científico devem ser atribuídos por um administrador.
+O login e o cadastro usam Supabase Auth com e-mail e senha. O nome é enviado como metadado da conta e, quando a tabela `public.profiles` está configurada, o portal consulta o perfil protegido por Row Level Security. O cadastro é único: a pessoa assume o papel de participante ao se inscrever e de autora ao submeter um trabalho, podendo acumular os dois papéis. Revisor e Comitê científico continuam sendo permissões concedidas pela organização.
 
 Para ativar a persistência de perfis e inscrições, execute [`supabase/schema.sql`](./supabase/schema.sql) no SQL Editor do projeto Supabase. As políticas RLS garantem que cada usuário consulte e altere somente as próprias inscrições.
 
