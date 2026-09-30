@@ -41,9 +41,39 @@ let currentProfile = null;
 let currentRegistrationEvent = null;
 
 const events = {
-  'Simpósio Brasileiro de Ciência de Dados': { type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'credenciamento às 8h30, palestra de abertura às 10h e sessões técnicas às 14h', contact: 'eventos@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], image: './assets/events/data-science.webp', description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.' },
-  'Congresso Nacional de Inovação em Saúde': { type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'inscrições até 15 de novembro de 2026; chamada de pôsteres até 2 de novembro', registration: 'inscrições abertas no protótipo', program: 'a programação detalhada ainda não foi cadastrada', contact: 'eventos@universidade.br', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], image: './assets/events/health-innovation.webp', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.' },
-  'Workshop de Robótica e Sistemas Autônomos': { type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'vagas disponíveis enquanto houver disponibilidade', registration: 'inscrições abertas no protótipo', program: 'atividades práticas de robótica, automação e sistemas autônomos', contact: 'eventos@universidade.br', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], image: './assets/events/robotics-workshop.webp', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.' }
+  'Simpósio Brasileiro de Ciência de Dados': {
+    type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'no dia 12, credenciamento às 8h30, abertura às 10h, sessões técnicas às 14h e painel sobre IA responsável às 16h30', contact: 'dados2026@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], image: './assets/events/data-science.webp', description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.',
+    programItems: [
+      { day: '12 NOV', time: '08:30', title: 'Credenciamento e acolhimento', place: 'Hall principal' },
+      { day: '12 NOV', time: '10:00', title: 'Abertura: dados para transformação social', place: 'Auditório central' },
+      { day: '12 NOV', time: '14:00', title: 'Sessões técnicas de aprendizado de máquina', place: 'Salas 1 a 4' },
+      { day: '12 NOV', time: '16:30', title: 'Painel sobre IA responsável', place: 'Auditório central' }
+    ],
+    deadlines: [{ date: '08 OUT', label: 'Submissão de artigos completos' }, { date: '28 OUT', label: 'Divulgação dos resultados' }, { date: '05 NOV', label: 'Envio da versão final' }],
+    call: { status: 'Chamada aberta', title: 'Artigos completos e resumos expandidos', description: 'A chamada recebe pesquisas concluídas ou em andamento sobre ciência de dados, inteligência artificial responsável e visualização de informações.', modalities: ['Artigo completo · 8 a 12 páginas', 'Resumo expandido · 4 a 6 páginas'], rules: 'Envio em PDF, sem identificação dos autores, seguindo o modelo da chamada. Cada trabalho pode cadastrar até cinco coautores.' }
+  },
+  'Congresso Nacional de Inovação em Saúde': {
+    type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'chamada de pôsteres até 2 de novembro de 2026', registration: 'inscrições abertas no protótipo', program: 'no dia 22, abertura às 9h, mesa de saúde digital às 10h30, pôsteres às 14h e debate sobre inovação no SUS às 16h', contact: 'saudeinovacao@congresso.org.br · (81) 3200-1188', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], image: './assets/events/health-innovation.webp', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.',
+    programItems: [
+      { day: '22 NOV', time: '09:00', title: 'Cerimônia de abertura', place: 'Auditório Recife' },
+      { day: '22 NOV', time: '10:30', title: 'Mesa: saúde digital e cuidado conectado', place: 'Auditório Recife' },
+      { day: '22 NOV', time: '14:00', title: 'Sessão de pôsteres e demonstrações', place: 'Pavilhão de exposições' },
+      { day: '22 NOV', time: '16:00', title: 'Debate: inovação e acesso no SUS', place: 'Sala Capibaribe' }
+    ],
+    deadlines: [{ date: '02 NOV', label: 'Envio de pôsteres científicos' }, { date: '10 NOV', label: 'Resultado das avaliações' }, { date: '15 NOV', label: 'Inscrição de autores aprovados' }],
+    call: { status: 'Chamada aberta', title: 'Pôsteres científicos e relatos de experiência', description: 'Podem ser enviados estudos de inovação clínica, saúde digital, biotecnologia e ampliação do acesso aos serviços de saúde.', modalities: ['Pôster científico · resumo de até 500 palavras', 'Relato de experiência · 3 a 5 páginas'], rules: 'O arquivo deve estar em PDF e apresentar objetivo, método, resultados e considerações finais. Trabalhos com dados de pacientes devem declarar aprovação ética.' }
+  },
+  'Workshop de Robótica e Sistemas Autônomos': {
+    type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'propostas de projetos até 20 de novembro de 2026', registration: 'inscrições abertas no protótipo', program: 'credenciamento às 8h, oficina de sensores às 9h, desafio de robôs às 13h30 e mostra de projetos às 16h', contact: 'robotica@workshop.org.br · (75) 3224-5090', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], image: './assets/events/robotics-workshop.webp', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.',
+    programItems: [
+      { day: '05 DEZ', time: '08:00', title: 'Credenciamento e formação das equipes', place: 'Laboratório maker' },
+      { day: '05 DEZ', time: '09:00', title: 'Oficina de sensores e visão computacional', place: 'Laboratório 2' },
+      { day: '05 DEZ', time: '13:30', title: 'Desafio de navegação autônoma', place: 'Arena de robótica' },
+      { day: '05 DEZ', time: '16:00', title: 'Mostra de projetos e encerramento', place: 'Auditório principal' }
+    ],
+    deadlines: [{ date: '20 NOV', label: 'Envio de propostas de projetos' }, { date: '26 NOV', label: 'Divulgação das equipes selecionadas' }, { date: '30 NOV', label: 'Confirmação de participação' }],
+    call: { status: 'Chamada aberta', title: 'Projetos e demonstrações de robótica', description: 'A organização selecionará protótipos, demonstrações e relatos técnicos relacionados a robótica educacional, automação e sistemas autônomos.', modalities: ['Projeto demonstrável · resumo de 2 páginas', 'Relato técnico · 4 a 6 páginas'], rules: 'A proposta deve informar os equipamentos necessários, requisitos de segurança e quantidade de integrantes da equipe. O envio deve ser feito em PDF.' }
+  }
 };
 
 function addChatMessage(text, sender = 'bot') {
@@ -298,12 +328,66 @@ function openEvent(name) {
     document.querySelector('#event-dialog-date').textContent = event.date;
     document.querySelector('#event-dialog-title').textContent = name;
     document.querySelector('#event-dialog-location').textContent = event.location;
+    document.querySelector('#event-dialog-format').textContent = event.format[0].toUpperCase() + event.format.slice(1);
     document.querySelector('#event-dialog-description').textContent = event.description;
+    document.querySelector('#event-dialog-contact').textContent = `Secretaria do evento · ${event.contact}`;
     document.querySelector('#registration-title').textContent = name;
+    renderEventProgram(event);
+    renderEventDeadlines(event);
+    renderEventCall(event);
     loading.hidden = true;
     content.hidden = false;
     eventDialog.setAttribute('aria-busy', 'false');
   }, 420);
+}
+
+function renderEventProgram(event) {
+  const list = document.querySelector('#event-program-list');
+  list.replaceChildren();
+  event.programItems.forEach((item) => {
+    const article = document.createElement('article');
+    const schedule = document.createElement('div');
+    schedule.className = 'program-schedule';
+    const day = document.createElement('small');
+    day.textContent = item.day;
+    const time = document.createElement('time');
+    time.textContent = item.time;
+    schedule.append(day, time);
+    const content = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = item.title;
+    const place = document.createElement('span');
+    place.textContent = item.place;
+    content.append(title, place);
+    article.append(schedule, content);
+    list.append(article);
+  });
+}
+
+function renderEventDeadlines(event) {
+  const list = document.querySelector('#event-deadline-list');
+  list.replaceChildren();
+  event.deadlines.forEach((item) => {
+    const entry = document.createElement('li');
+    const date = document.createElement('span');
+    date.textContent = item.date;
+    entry.append(date, document.createTextNode(item.label));
+    list.append(entry);
+  });
+}
+
+function renderEventCall(event) {
+  document.querySelector('#event-call-status').textContent = event.call.status;
+  document.querySelector('#event-call-title').textContent = event.call.title;
+  document.querySelector('#event-call-description').textContent = event.call.description;
+  document.querySelector('#event-call-rules').textContent = event.call.rules;
+  const list = document.querySelector('#event-call-modalities');
+  list.replaceChildren();
+  event.call.modalities.forEach((modality) => {
+    const item = document.createElement('li');
+    item.textContent = modality;
+    list.append(item);
+  });
 }
 
 function setWizardStep(step) {

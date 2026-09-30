@@ -12,7 +12,7 @@ Este backlog organiza as lacunas encontradas na comparação entre o protótipo,
 - [x] Painel de acessibilidade com tamanho do texto, alto contraste e redução de movimento.
 - [x] Linha do tempo visual das etapas da chamada.
 - [ ] Filtro dedicado por cidade, data e classificação indicativa.
-- [ ] Página pública completa de programação.
+- [x] Programação pública específica para cada evento.
 
 ## Média dificuldade
 
