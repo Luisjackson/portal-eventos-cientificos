@@ -174,6 +174,9 @@ async function loadOrganizationData() {
   if (memberResult.error) {
     document.querySelector('#organization-member-error').textContent = `Não foi possível carregar a equipe: ${memberResult.error.message}`;
   }
+  if (committeeResult.error) {
+    document.querySelector('#event-committee-error').textContent = `Não foi possível carregar o comitê: ${committeeResult.error.message}`;
+  }
   organizations = organizationResult.data || [];
   events = eventResult.data || [];
   organizationMembers = memberResult.data || [];
@@ -295,6 +298,20 @@ document.querySelector('#organization-members-refresh').addEventListener('click'
     if (!errorPanel.textContent) showToast('Lista de integrantes atualizada.');
   } catch (error) {
     errorPanel.textContent = error.message || 'Não foi possível atualizar a lista.';
+  } finally {
+    setButtonLoading(button, false);
+  }
+});
+document.querySelector('#event-committee-refresh').addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  const errorPanel = document.querySelector('#event-committee-error');
+  setButtonLoading(button, true, 'Atualizando…');
+  errorPanel.textContent = '';
+  try {
+    await loadOrganizationData();
+    if (!errorPanel.textContent) showToast('Lista do comitê atualizada.');
+  } catch (error) {
+    errorPanel.textContent = error.message || 'Não foi possível atualizar a lista do comitê.';
   } finally {
     setButtonLoading(button, false);
   }
