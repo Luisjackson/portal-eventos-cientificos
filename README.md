@@ -48,6 +48,8 @@ Depois, execute [`supabase/migration_self_service_organizations.sql`](./supabase
 
 Para permitir que um evento seja salvo como rascunho sem nenhum campo preenchido, execute em seguida [`supabase/migration_optional_organization_events.sql`](./supabase/migration_optional_organization_events.sql). Campos e datas vazios permanecem opcionais; o portal cria apenas um título provisório para identificar o rascunho.
 
+Execute também [`supabase/migration_fix_organization_event_listing.sql`](./supabase/migration_fix_organization_event_listing.sql) para remover a referência circular das políticas RLS e permitir que eventos salvos apareçam imediatamente na lista da organização.
+
 ## Estrutura
 
 - `dist/index.html`: estrutura e conteúdo do portal;

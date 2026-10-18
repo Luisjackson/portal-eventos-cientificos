@@ -82,6 +82,38 @@ as $$
   );
 $$;
 
+create or replace function public.is_event_committee_member(p_event_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.event_committee_members ecm
+    where ecm.event_id = p_event_id
+      and ecm.user_id = (select auth.uid())
+      and ecm.active
+  );
+$$;
+
+create or replace function public.is_event_organization_member(p_event_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.event_configurations ec
+    join public.organization_members om on om.organization_id = ec.organization_id
+    where ec.id = p_event_id
+      and om.user_id = (select auth.uid())
+      and om.active
+  );
+$$;
+
 create or replace function public.is_committee()
 returns boolean
 language sql
@@ -119,10 +151,7 @@ create policy "Equipe consulta comitês dos eventos"
 on public.event_committee_members for select to authenticated
 using (
   user_id = (select auth.uid())
-  or exists (
-    select 1 from public.event_configurations ec
-    where ec.id = event_id and (select public.is_organization_member(ec.organization_id))
-  )
+  or (select public.is_event_organization_member(event_id))
 );
 
 drop policy if exists "Comitê consulta configurações de eventos" on public.event_configurations;
@@ -130,10 +159,7 @@ create policy "Comitê consulta configurações de eventos"
 on public.event_configurations for select to authenticated
 using (
   (select public.is_organization_member(organization_id))
-  or exists (
-    select 1 from public.event_committee_members ecm
-    where ecm.event_id = id and ecm.user_id = (select auth.uid()) and ecm.active
-  )
+  or (select public.is_event_committee_member(id))
   or (organization_id is null and (select public.is_committee()))
 );
 
@@ -265,6 +291,8 @@ $$;
 
 revoke all on function public.is_organization_member(uuid) from public;
 revoke all on function public.is_organization_owner(uuid) from public;
+revoke all on function public.is_event_committee_member(uuid) from public;
+revoke all on function public.is_event_organization_member(uuid) from public;
 revoke all on function public.create_organization(text, text, text, text, text, text) from public;
 revoke all on function public.save_organization_event(uuid, uuid, text, text, text, text, date, date, date, date, text[], text, boolean) from public;
 revoke all on function public.manage_organization_member(uuid, text, boolean) from public;
@@ -272,6 +300,8 @@ revoke all on function public.manage_event_committee_member(uuid, text, boolean)
 
 grant execute on function public.is_organization_member(uuid) to authenticated;
 grant execute on function public.is_organization_owner(uuid) to authenticated;
+grant execute on function public.is_event_committee_member(uuid) to authenticated;
+grant execute on function public.is_event_organization_member(uuid) to authenticated;
 grant execute on function public.create_organization(text, text, text, text, text, text) to authenticated;
 grant execute on function public.save_organization_event(uuid, uuid, text, text, text, text, date, date, date, date, text[], text, boolean) to authenticated;
 grant execute on function public.manage_organization_member(uuid, text, boolean) to authenticated;

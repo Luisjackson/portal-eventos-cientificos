@@ -155,6 +155,13 @@ async function loadOrganizationData() {
     document.querySelector('#organization-form-error').textContent = 'Execute supabase/migration_self_service_organizations.sql antes de criar a organização.';
     return;
   }
+  if (eventResult.error) {
+    const errorPanel = document.querySelector('#organization-event-error');
+    const policyError = /recursion|policy/i.test(eventResult.error.message || '');
+    errorPanel.textContent = policyError
+      ? 'A lista não pôde ser carregada. Execute supabase/migration_fix_organization_event_listing.sql no Supabase.'
+      : `Não foi possível carregar os eventos: ${eventResult.error.message}`;
+  }
   organizations = organizationResult.data || [];
   events = eventResult.data || [];
   organizationMembers = memberResult.data || [];
@@ -203,7 +210,7 @@ async function saveEvent(event) {
   const errorPanel = document.querySelector('#organization-event-error');
   setButtonLoading(button, true, 'Salvando…');
   errorPanel.textContent = '';
-  const { error } = await supabaseClient.rpc('save_organization_event', {
+  const { data: savedEventId, error } = await supabaseClient.rpc('save_organization_event', {
     p_event_id: document.querySelector('#organization-event-id').value || null,
     p_organization_id: activeOrganizationId,
     p_event_name: document.querySelector('#organization-event-name').value.trim(),
@@ -223,6 +230,9 @@ async function saveEvent(event) {
   resetEventForm();
   showToast('Evento salvo na organização.');
   await loadOrganizationData();
+  if (savedEventId && !events.some((item) => item.id === savedEventId)) {
+    errorPanel.textContent = 'O evento foi salvo, mas a lista não pôde ser atualizada. Execute supabase/migration_fix_organization_event_listing.sql no Supabase.';
+  }
 }
 
 async function saveOrganizationMember(event) {
