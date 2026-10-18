@@ -114,6 +114,33 @@ as $$
   );
 $$;
 
+create or replace function public.list_my_organization_members()
+returns table (
+  id uuid,
+  organization_id uuid,
+  user_id uuid,
+  email text,
+  role text,
+  active boolean,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select om.id, om.organization_id, om.user_id, om.email, om.role, om.active, om.created_at, om.updated_at
+  from public.organization_members om
+  where exists (
+    select 1 from public.organization_members access
+    where access.organization_id = om.organization_id
+      and access.user_id = (select auth.uid())
+      and access.active
+  )
+  order by om.created_at;
+$$;
+
 create or replace function public.is_committee()
 returns boolean
 language sql
@@ -293,6 +320,7 @@ revoke all on function public.is_organization_member(uuid) from public;
 revoke all on function public.is_organization_owner(uuid) from public;
 revoke all on function public.is_event_committee_member(uuid) from public;
 revoke all on function public.is_event_organization_member(uuid) from public;
+revoke all on function public.list_my_organization_members() from public;
 revoke all on function public.create_organization(text, text, text, text, text, text) from public;
 revoke all on function public.save_organization_event(uuid, uuid, text, text, text, text, date, date, date, date, text[], text, boolean) from public;
 revoke all on function public.manage_organization_member(uuid, text, boolean) from public;
@@ -302,6 +330,7 @@ grant execute on function public.is_organization_member(uuid) to authenticated;
 grant execute on function public.is_organization_owner(uuid) to authenticated;
 grant execute on function public.is_event_committee_member(uuid) to authenticated;
 grant execute on function public.is_event_organization_member(uuid) to authenticated;
+grant execute on function public.list_my_organization_members() to authenticated;
 grant execute on function public.create_organization(text, text, text, text, text, text) to authenticated;
 grant execute on function public.save_organization_event(uuid, uuid, text, text, text, text, date, date, date, date, text[], text, boolean) to authenticated;
 grant execute on function public.manage_organization_member(uuid, text, boolean) to authenticated;

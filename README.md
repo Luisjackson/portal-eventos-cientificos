@@ -50,6 +50,8 @@ Para permitir que um evento seja salvo como rascunho sem nenhum campo preenchido
 
 Execute também [`supabase/migration_fix_organization_event_listing.sql`](./supabase/migration_fix_organization_event_listing.sql) para remover a referência circular das políticas RLS e permitir que eventos salvos apareçam imediatamente na lista da organização.
 
+Para garantir a atualização da lista em **Equipe da organização**, execute [`supabase/migration_fix_organization_team_listing.sql`](./supabase/migration_fix_organization_team_listing.sql).
+
 ## Estrutura
 
 - `dist/index.html`: estrutura e conteúdo do portal;

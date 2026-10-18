@@ -142,11 +142,20 @@ function renderDashboard() {
   renderCommittee();
 }
 
+async function loadOrganizationMembers() {
+  const rpcResult = await supabaseClient.rpc('list_my_organization_members');
+  if (!rpcResult.error) return rpcResult;
+  if (/does not exist|schema cache|could not find the function/i.test(rpcResult.error.message || '')) {
+    return supabaseClient.from('organization_members').select('*').order('created_at');
+  }
+  return rpcResult;
+}
+
 async function loadOrganizationData() {
   const [organizationResult, eventResult, memberResult, committeeResult] = await Promise.all([
     supabaseClient.from('organizations').select('*').order('created_at'),
     supabaseClient.from('event_configurations').select('*').order('created_at', { ascending: false }),
-    supabaseClient.from('organization_members').select('*').order('created_at'),
+    loadOrganizationMembers(),
     supabaseClient.from('event_committee_members').select('*').order('created_at')
   ]);
   const migrationMissing = [organizationResult, memberResult, committeeResult].some((result) => result.error && /does not exist|schema cache/i.test(result.error.message || ''));
@@ -161,6 +170,9 @@ async function loadOrganizationData() {
     errorPanel.textContent = policyError
       ? 'A lista não pôde ser carregada. Execute supabase/migration_fix_organization_event_listing.sql no Supabase.'
       : `Não foi possível carregar os eventos: ${eventResult.error.message}`;
+  }
+  if (memberResult.error) {
+    document.querySelector('#organization-member-error').textContent = `Não foi possível carregar a equipe: ${memberResult.error.message}`;
   }
   organizations = organizationResult.data || [];
   events = eventResult.data || [];
@@ -241,11 +253,17 @@ async function saveOrganizationMember(event) {
   const errorPanel = document.querySelector('#organization-member-error');
   setButtonLoading(button, true, 'Salvando…');
   errorPanel.textContent = '';
-  const { error } = await supabaseClient.rpc('manage_organization_member', { p_organization_id: activeOrganizationId, p_email: document.querySelector('#organization-member-email').value.trim(), p_active: document.querySelector('#organization-member-active').checked });
+  const memberEmail = document.querySelector('#organization-member-email').value.trim().toLowerCase();
+  const memberActive = document.querySelector('#organization-member-active').checked;
+  const { data: savedUserId, error } = await supabaseClient.rpc('manage_organization_member', { p_organization_id: activeOrganizationId, p_email: memberEmail, p_active: memberActive });
   setButtonLoading(button, false);
   if (error) { errorPanel.textContent = /não encontrada/i.test(error.message || '') ? 'Essa pessoa precisa criar uma conta primeiro.' : error.message; return; }
   event.currentTarget.reset(); document.querySelector('#organization-member-active').checked = true;
-  showToast('Equipe da organização atualizada.'); await loadOrganizationData();
+  showToast('Equipe da organização atualizada.');
+  await loadOrganizationData();
+  if (savedUserId && !organizationMembers.some((member) => member.organization_id === activeOrganizationId && member.user_id === savedUserId)) {
+    errorPanel.textContent = 'O integrante foi salvo, mas a lista não pôde ser atualizada. Execute supabase/migration_fix_organization_team_listing.sql no Supabase.';
+  }
 }
 
 async function saveCommitteeMember(event) {
