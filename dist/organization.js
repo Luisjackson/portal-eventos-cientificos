@@ -160,6 +160,7 @@ async function loadOrganizationData() {
   events = eventResult.data || [];
   organizationMembers = memberResult.data || [];
   committeeMembers = committeeResult.data || [];
+  document.querySelectorAll('[data-organization-nav]').forEach((link) => { link.hidden = organizations.length === 0; });
   if (!organizations.length) {
     onboarding.hidden = false;
     dashboard.hidden = true;
