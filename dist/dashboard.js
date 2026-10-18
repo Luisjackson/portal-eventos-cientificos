@@ -3,6 +3,7 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_s2DegO56caEwHGt2Op_Szg_F3dR6i5c
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
+window.setupOrganizationNavigation?.(supabaseClient);
 
 const eventImages = {
   'Simpósio Brasileiro de Ciência de Dados': './assets/events/data-science.webp',
