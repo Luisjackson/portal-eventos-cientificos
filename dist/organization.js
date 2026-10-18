@@ -285,6 +285,20 @@ document.querySelector('#organization-event-form').addEventListener('submit', sa
 document.querySelector('#organization-member-form').addEventListener('submit', saveOrganizationMember);
 document.querySelector('#event-committee-form').addEventListener('submit', saveCommitteeMember);
 document.querySelector('#organization-event-cancel').addEventListener('click', resetEventForm);
+document.querySelector('#organization-members-refresh').addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  const errorPanel = document.querySelector('#organization-member-error');
+  setButtonLoading(button, true, 'Atualizando…');
+  errorPanel.textContent = '';
+  try {
+    await loadOrganizationData();
+    if (!errorPanel.textContent) showToast('Lista de integrantes atualizada.');
+  } catch (error) {
+    errorPanel.textContent = error.message || 'Não foi possível atualizar a lista.';
+  } finally {
+    setButtonLoading(button, false);
+  }
+});
 document.querySelector('#new-organization').addEventListener('click', () => {
   document.querySelector('#organization-form').reset();
   document.querySelector('#organization-form-error').textContent = '';
