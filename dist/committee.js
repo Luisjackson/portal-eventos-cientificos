@@ -10,6 +10,8 @@ let registrations = [];
 let submissions = [];
 let eventConfigurations = [];
 let committeeMembers = [];
+let allRegistrations = [];
+let allSubmissions = [];
 let toastTimer;
 
 const statusNames = { submitted: 'Submetido', under_review: 'Em avaliação', changes_requested: 'Correções solicitadas', accepted: 'Aceito', rejected: 'Não aceito', final_submitted: 'Versão final' };
@@ -40,6 +42,22 @@ function switchTab(name) {
     panel.hidden = !active; panel.classList.toggle('active', active);
   });
   history.replaceState(null, '', `#${name}`);
+}
+
+function applyEventScope() {
+  const eventName = document.querySelector('#committee-event-select').value;
+  registrations = eventName ? allRegistrations.filter((item) => item.event_name === eventName) : allRegistrations;
+  submissions = eventName ? allSubmissions.filter((item) => item.event_name === eventName) : allSubmissions;
+  renderOverview(); renderSubmissions(); renderParticipants();
+}
+
+function renderEventSelector() {
+  const wrapper = document.querySelector('#committee-event-selector');
+  const select = document.querySelector('#committee-event-select');
+  select.replaceChildren();
+  eventConfigurations.forEach((event) => select.add(new Option(event.event_name, event.event_name)));
+  wrapper.hidden = eventConfigurations.length < 2;
+  if (eventConfigurations.length) select.value = eventConfigurations[0].event_name;
 }
 
 function renderOverview() {
@@ -210,13 +228,14 @@ async function loadData() {
   ]);
   const firstError = [profileResult, registrationResult, submissionResult, eventResult, memberResult].find((result) => result.error)?.error;
   if (firstError) { document.querySelector('#committee-submission-error').textContent = 'Não foi possível carregar a gestão. Verifique se migration_committee_area.sql foi executada.'; document.querySelector('#committee-submission-error').hidden = false; return; }
-  profiles = profileResult.data || []; registrations = registrationResult.data || []; submissions = submissionResult.data || []; eventConfigurations = eventResult.data || []; committeeMembers = memberResult.data || [];
-  renderOverview(); renderEvents(); renderSubmissions(); renderParticipants(); renderMembers();
+  profiles = profileResult.data || []; allRegistrations = registrationResult.data || []; allSubmissions = submissionResult.data || []; eventConfigurations = eventResult.data || []; committeeMembers = memberResult.data || [];
+  renderEventSelector(); applyEventScope(); renderEvents(); renderMembers();
 }
 
 document.querySelectorAll('[data-committee-tab]').forEach((button) => button.addEventListener('click', () => switchTab(button.dataset.committeeTab)));
 document.querySelector('#event-config-form').addEventListener('submit', saveEvent);
 document.querySelector('#committee-member-form').addEventListener('submit', saveMember);
+document.querySelector('#committee-event-select').addEventListener('change', applyEventScope);
 document.querySelector('.menu-toggle').addEventListener('click', () => { const nav = document.querySelector('#main-nav'); const open = nav.classList.toggle('open'); document.querySelector('.menu-toggle').setAttribute('aria-expanded', String(open)); });
 document.querySelector('#committee-logout').addEventListener('click', async () => { await supabaseClient.auth.signOut(); location.href = './index.html'; });
 
@@ -225,7 +244,7 @@ async function initializeCommittee() {
   if (!session?.user) { authPanel.hidden = false; return; }
   const { data: allowed, error } = await supabaseClient.rpc('is_committee');
   if (error || !allowed) {
-    document.querySelector('#committee-auth-message').textContent = error ? 'A migração da área do comitê ainda não está disponível para esta conta.' : `A conta ${session.user.email} está conectada, mas não consta como integrante ativo em committee_members.`;
+    document.querySelector('#committee-auth-message').textContent = error ? 'A configuração da área do comitê ainda não está disponível para esta conta.' : `A conta ${session.user.email} está conectada, mas não foi vinculada ao comitê de nenhum evento.`;
     authPanel.hidden = false; return;
   }
   content.hidden = false; document.querySelector('#committee-logout').hidden = false;

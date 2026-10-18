@@ -13,7 +13,8 @@ Esboço inicial navegável para a atividade de IHC da UNEB. A primeira entrega c
 - crachá imprimível, certificado condicionado à presença e acompanhamento do pagamento;
 - submissão persistente de artigos em PDF, coautores, situação, parecer e versão final;
 - área do revisor com trabalhos atribuídos, PDF privado, critérios, notas, parecer, conflito e prazos;
-- área protegida da organização e do comitê para eventos, participantes, equipe, múltiplos revisores, decisões, comunicações, publicação de aprovados e emissão de documentos;
+- criação autônoma de organizações, com proprietário automático, eventos e convites por e-mail;
+- áreas separadas da organização e do comitê para equipe, múltiplos revisores, decisões, comunicações e publicação de aprovados;
 - estados normal, vazio e de sucesso;
 - layout responsivo e navegação por teclado.
 
@@ -41,7 +42,9 @@ Para ativar a área do revisor, execute [`supabase/migration_reviewer_area.sql`]
 
 Neste protótipo, o formulário de nova submissão também permite indicar a conta do revisor pelo e-mail. Depois da migração da área do revisor, execute [`supabase/migration_assign_reviewer_on_submission.sql`](./supabase/migration_assign_reviewer_on_submission.sql) para ativar essa atribuição automática.
 
-Para ativar a gestão da organização, execute [`supabase/migration_committee_area.sql`](./supabase/migration_committee_area.sql). Depois, use o comando comentado no final do arquivo para cadastrar a primeira conta organizadora. A área ficará disponível em `comite.html`; somente membros ativos conseguem consultar ou alterar os dados administrativos.
+Para ativar a gestão científica já existente, execute [`supabase/migration_committee_area.sql`](./supabase/migration_committee_area.sql).
+
+Depois, execute [`supabase/migration_self_service_organizations.sql`](./supabase/migration_self_service_organizations.sql). Essa migração remove a necessidade de cadastrar o primeiro organizador manualmente: qualquer usuário autenticado pode criar uma organização em `organizacao.html`, torna-se proprietário dela e pode criar eventos, convidar organizadores e vincular integrantes ao comitê de cada evento. A gestão científica permanece protegida em `comite.html`.
 
 ## Estrutura
 
@@ -49,5 +52,7 @@ Para ativar a gestão da organização, execute [`supabase/migration_committee_a
 - `dist/styles.css`: identidade visual e responsividade;
 - `dist/app.js`: busca, filtros, favoritos e diálogo de acesso;
 - `dist/dashboard.js`: área autenticada do participante e do autor;
+- `dist/organizacao.html` e `dist/organization.js`: criação e painel da organização;
+- `dist/comite.html` e `dist/committee.js`: área científica protegida;
 - `supabase/`: schema e migrações do banco;
 - `.openai/hosting.json`: configuração de publicação do protótipo.

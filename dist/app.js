@@ -674,8 +674,8 @@ loginForm.addEventListener('submit', async (event) => {
   const user = getSession();
   updateAuthButton();
   const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
-  if (redirectTarget === 'minha-area' || redirectTarget === 'comite') {
-    window.location.href = redirectTarget === 'comite' ? './comite.html' : './minha-area.html';
+  if (['minha-area', 'comite', 'organizacao'].includes(redirectTarget)) {
+    window.location.href = redirectTarget === 'comite' ? './comite.html' : redirectTarget === 'organizacao' ? './organizacao.html' : './minha-area.html';
     return;
   }
   showAuthSuccess(`Olá, ${user.name.split(' ')[0]}!`, 'Sua sessão foi iniciada e o portal reconheceu o seu perfil.');
@@ -718,8 +718,8 @@ signupForm.addEventListener('submit', async (event) => {
     await loadCurrentProfile(data.user);
     updateAuthButton();
     const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
-    if (redirectTarget === 'minha-area' || redirectTarget === 'comite') {
-      window.location.href = redirectTarget === 'comite' ? './comite.html' : './minha-area.html';
+    if (['minha-area', 'comite', 'organizacao'].includes(redirectTarget)) {
+      window.location.href = redirectTarget === 'comite' ? './comite.html' : redirectTarget === 'organizacao' ? './organizacao.html' : './minha-area.html';
       return;
     }
     showAuthSuccess('Conta criada!', 'Seu cadastro foi concluído e você já está conectado ao portal.');
@@ -859,6 +859,9 @@ async function initializeAuth() {
     if (redirectTarget === 'comite') {
       areaLink.href = './comite.html';
       areaLink.textContent = 'Tentar acessar o comitê';
+    } else if (redirectTarget === 'organizacao') {
+      areaLink.href = './organizacao.html';
+      areaLink.textContent = 'Continuar para organização';
     }
     openLogin();
   }

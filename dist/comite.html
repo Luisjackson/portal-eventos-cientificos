@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Área da organização e do comitê científico." />
+    <meta name="description" content="Área restrita para integrantes do comitê científico." />
     <meta name="theme-color" content="#0f172a" />
-    <title>Organização e comitê | Portal de Eventos Científicos</title>
+    <title>Área do comitê | Portal de Eventos Científicos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
@@ -16,16 +16,17 @@
     <header class="site-header"><div class="shell header-inner">
       <a class="brand" href="./index.html" aria-label="Portal de Eventos Científicos - início"><img class="brand-mark" src="./assets/brand-mark.svg" alt="" /><span>Portal de <strong>Eventos Científicos</strong></span></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span class="sr-only">Abrir menu</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
-      <nav id="main-nav" class="main-nav" aria-label="Navegação principal"><a href="./index.html">Início</a><a href="./minha-area.html">Minha área</a><a class="active" href="./comite.html" aria-current="page">Comitê</a></nav>
+      <nav id="main-nav" class="main-nav" aria-label="Navegação principal"><a href="./index.html">Início</a><a href="./minha-area.html">Minha área</a><a href="./organizacao.html">Organização</a><a class="active" href="./comite.html" aria-current="page">Área do comitê</a></nav>
       <button class="button button-ghost" id="committee-logout" type="button" hidden>Sair</button>
     </div></header>
 
     <main id="conteudo">
-      <section class="section auth-required" id="committee-auth" hidden><div class="shell"><div class="dashboard-card auth-required-card"><span aria-hidden="true">🔒</span><h1>Área restrita à organização</h1><p id="committee-auth-message">Entre com uma conta cadastrada como integrante do comitê.</p><a class="button button-primary" id="committee-login-link" href="./index.html?login=1&amp;redirect=comite">Entrar ou trocar de conta</a></div></div></section>
+      <section class="section auth-required" id="committee-auth" hidden><div class="shell"><div class="dashboard-card auth-required-card"><span aria-hidden="true">🔒</span><h1>Área restrita ao comitê científico</h1><p id="committee-auth-message">Entre com uma conta vinculada ao comitê de um evento.</p><a class="button button-primary" id="committee-login-link" href="./index.html?login=1&amp;redirect=comite">Entrar ou trocar de conta</a><a class="text-link" href="./organizacao.html">Quer organizar um evento? Crie uma organização →</a></div></div></section>
 
       <section class="section committee-dashboard" id="committee-content" hidden><div class="shell">
-        <div class="dashboard-heading"><div><span class="eyebrow dark"><span></span> Gestão científica</span><h1>Organização e comitê</h1><p>Configure o evento, distribua trabalhos, acompanhe decisões e gerencie participantes.</p></div><a class="button button-secondary" href="./index.html">Ver portal público</a></div>
-        <nav class="dashboard-tabs" aria-label="Seções do comitê"><button class="active" type="button" data-committee-tab="overview">Visão geral</button><button type="button" data-committee-tab="event">Evento</button><button type="button" data-committee-tab="submissions">Submissões e revisões</button><button type="button" data-committee-tab="participants">Participantes</button><button type="button" data-committee-tab="team">Comitê</button></nav>
+        <div class="dashboard-heading"><div><span class="eyebrow dark"><span></span> Gestão científica</span><h1>Área do comitê</h1><p>Distribua trabalhos, acompanhe revisões, registre decisões e comunique os autores.</p></div><a class="button button-secondary" href="./organizacao.html">Painel da organização</a></div>
+        <label class="organization-selector" id="committee-event-selector" hidden>Evento ativo<select id="committee-event-select" aria-label="Selecionar evento do comitê"></select></label>
+        <nav class="dashboard-tabs" aria-label="Seções do comitê"><button class="active" type="button" data-committee-tab="overview">Visão geral</button><button type="button" data-committee-tab="submissions">Submissões e revisões</button></nav>
 
         <section class="dashboard-panel active" data-committee-panel="overview"><div class="dashboard-stats committee-stats"><article><span id="committee-submission-count">0</span><p>submissões</p></article><article><span id="committee-review-count">0</span><p>revisões concluídas</p></article><article><span id="committee-participant-count">0</span><p>participantes</p></article><article><span id="committee-published-count">0</span><p>artigos divulgados</p></article></div><div class="dashboard-card"><div class="dashboard-card-heading"><div><p>Acompanhamento</p><h2>Situação científica</h2></div></div><div class="committee-status-grid" id="committee-status-grid"></div></div></section>
 
