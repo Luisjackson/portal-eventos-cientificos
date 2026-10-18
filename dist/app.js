@@ -32,7 +32,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
     detectSessionInUrl: true
   }
 });
-window.setupOrganizationNavigation?.(supabaseClient);
 let selectedType = 'todos';
 let toastTimer;
 let wizardStep = 1;
@@ -674,7 +673,6 @@ loginForm.addEventListener('submit', async (event) => {
   await loadCurrentProfile(data.user);
   const user = getSession();
   updateAuthButton();
-  window.setupOrganizationNavigation?.(supabaseClient);
   const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
   if (['minha-area', 'comite', 'organizacao'].includes(redirectTarget)) {
     window.location.href = redirectTarget === 'comite' ? './comite.html' : redirectTarget === 'organizacao' ? './organizacao.html' : './minha-area.html';
@@ -719,7 +717,6 @@ signupForm.addEventListener('submit', async (event) => {
     currentAuthUser = data.user;
     await loadCurrentProfile(data.user);
     updateAuthButton();
-    window.setupOrganizationNavigation?.(supabaseClient);
     const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
     if (['minha-area', 'comite', 'organizacao'].includes(redirectTarget)) {
       window.location.href = redirectTarget === 'comite' ? './comite.html' : redirectTarget === 'organizacao' ? './organizacao.html' : './minha-area.html';
@@ -777,7 +774,6 @@ document.querySelector('#logout-button').addEventListener('click', async () => {
   currentAuthUser = null;
   currentProfile = null;
   updateAuthButton();
-  window.setupOrganizationNavigation?.(supabaseClient);
   loginDialog.close();
   showToast('Você saiu da conta.');
 });

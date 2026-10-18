@@ -1,8 +1,6 @@
 const SUPABASE_URL = 'https://tgcaycijcaoemaztkwfn.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_s2DegO56caEwHGt2Op_Szg_F3dR6i5c';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
-window.setupOrganizationNavigation?.(supabaseClient);
-
 const authPanel = document.querySelector('#organization-auth');
 const onboarding = document.querySelector('#organization-onboarding');
 const dashboard = document.querySelector('#organization-dashboard');
@@ -161,7 +159,6 @@ async function loadOrganizationData() {
   events = eventResult.data || [];
   organizationMembers = memberResult.data || [];
   committeeMembers = committeeResult.data || [];
-  document.querySelectorAll('[data-organization-nav]').forEach((link) => { link.hidden = organizations.length === 0; });
   if (!organizations.length) {
     onboarding.hidden = false;
     dashboard.hidden = true;
