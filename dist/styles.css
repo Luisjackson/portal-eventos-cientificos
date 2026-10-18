@@ -301,3 +301,58 @@ html.reduce-motion { scroll-behavior:auto; }.reduce-motion *, .reduce-motion *::
 .committee-participant-card { display: grid; grid-template-columns: minmax(220px,.8fr) 1.5fr; gap: 22px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; }.committee-participant-card > div > span { color: var(--blue); font-size: .6rem; font-weight: 800; text-transform: uppercase; }.committee-participant-card h3 { margin: 4px 0; font-size: .85rem; }.committee-participant-card p { margin: 0; color: var(--muted); font-size: .64rem; }.committee-participant-card form { display: grid; grid-template-columns: 150px repeat(3,auto) auto; gap: 10px; align-items: center; }.committee-participant-card form label { color: #475569; font-size: .64rem; font-weight: 700; white-space: nowrap; }.committee-participant-card form select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font: inherit; font-size: .65rem; }.committee-participant-card input { accent-color: var(--blue); }.committee-participant-card .field-error { grid-column: 1/-1; }.committee-team-layout { grid-template-columns: 1fr 1fr; }.committee-member-list article { padding: 11px 12px; border-radius: 9px; background: #f8fafc; }.committee-member-list strong, .committee-member-list span { display: block; }.committee-member-list strong { font-size: .7rem; }.committee-member-list span { color: var(--muted); font-size: .62rem; }
 @media (max-width: 900px) { .organizer-invitation-inner { align-items: flex-start; flex-direction: column; gap: 24px; }.organization-onboarding-grid, .organization-layout { grid-template-columns: 1fr; }.organization-card-list { grid-template-columns: repeat(2,minmax(0,1fr)); }.committee-stats, .committee-status-grid { grid-template-columns: repeat(2,1fr); }.committee-team-layout, .committee-participant-card { grid-template-columns: 1fr; }.committee-participant-card form { grid-template-columns: repeat(2,1fr); }.committee-inline-form, .committee-decision-form { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { .organizer-invitation .button, .organization-heading-actions, .organization-heading-actions .button { width: 100%; }.organization-card-list { grid-template-columns: 1fr; }.organization-hub-heading { align-items: flex-start; flex-direction: column; gap: 4px; }.committee-stats, .committee-status-grid, .committee-form, .committee-participant-card form, .committee-inline-form, .committee-decision-form, .committee-message-form { grid-template-columns: 1fr; }.committee-form .wide, .committee-decision-form .wide { grid-column: auto; }.committee-submission-card > header, .committee-review-list li, .committee-event-list article { align-items: flex-start; flex-direction: column; }.committee-inline-form .field-error, .committee-decision-form .field-error, .committee-message-form .field-error { grid-column: auto; } }
+
+/* Tema claro/escuro */
+.header-inner:has(.theme-toggle) { grid-template-columns: 250px 1fr auto auto; gap: 14px; }
+.theme-toggle { min-width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; background: var(--surface); cursor: pointer; font: inherit; font-size: .72rem; font-weight: 700; white-space: nowrap; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+.theme-toggle:hover { border-color: #8bb0ff; transform: translateY(-1px); }.theme-toggle:focus-visible { outline: 3px solid rgba(37,99,235,.28); outline-offset: 3px; }.theme-toggle-icon { font-size: 1.15rem; line-height: 1; }
+
+html[data-theme="dark"] {
+  --ink: #e7eefc;
+  --muted: #9caec8;
+  --line: #283b58;
+  --surface: #111f33;
+  --surface-secondary: #0d1a2c;
+  --white: #081321;
+  --blue: #60a5fa;
+  --blue-dark: #3b82f6;
+  --shadow: 0 18px 46px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] body { background: #081321; }
+html[data-theme="dark"] .site-header { border-bottom-color: rgba(50,72,103,.8); background: rgba(7,17,31,.94); }
+html[data-theme="dark"] .main-nav a { color: #b3c2d8; }
+html[data-theme="dark"] .main-nav a:hover, html[data-theme="dark"] .main-nav a:focus, html[data-theme="dark"] .main-nav a.active { color: var(--blue); }
+html[data-theme="dark"] .theme-toggle { color: #dce8fa; background: #12233a; }
+html[data-theme="dark"] :is(.user-dashboard, .dashboard-page main, .committee-dashboard) { background: #0a1626; }
+html[data-theme="dark"] .organization-onboarding { background: linear-gradient(135deg,#0a1626,#12152d); }
+html[data-theme="dark"] :is(.event-card, .dashboard-card, .dashboard-stats article, .organization-hub, .committee-submission-card, .review-assignment-card, .portal-dialog, .event-dialog, .registration-dialog, .access-dialog, .cancel-dialog, .submission-dialog, .document-dialog, .chat-panel) { color: var(--ink); border-color: var(--line); background: #0e1c2f; }
+html[data-theme="dark"] :is(.card-action, .button-secondary, .button-light, .chip, .call-modalities li, .call-guidelines li, .contact-channel, .auth-tabs button.active, .chat-suggestions, .chat-form, .chat-message.bot p) { color: var(--ink); border-color: var(--line); background: #12233a; }
+html[data-theme="dark"] :is(.event-content, .detail-nav, .chat-suggestions, .chat-form) { background: #0e1c2f; }
+html[data-theme="dark"] :is(.detail-nav a, .dashboard-event-activities, .review-deadline, .review-abstract p, .committee-form label, .committee-inline-form label, .committee-decision-form label, .organization-selector, .portal-dialog form > label, .cancel-dialog form label) { color: #b4c3d9; }
+html[data-theme="dark"] :is(input, select, textarea) { color: var(--ink); border-color: #38506f; background: #0a1728; }
+html[data-theme="dark"] :is(input, textarea)::placeholder { color: #7185a3; }
+html[data-theme="dark"] :is(.dashboard-profile dl div, .account-panel dl div, .program-list article, .registration-summary, .committee-status-grid article, .committee-review-list li, .committee-member-list article, .coauthor-row, .review-deadline, .dashboard-loading, .organization-choice) { background: #111f33; }
+html[data-theme="dark"] :is(.organization-choice:hover, .organization-choice.active, .main-nav a.active, .detail-nav a:hover) { background: #152d4d; }
+html[data-theme="dark"] :is(.event-dialog-body #detalhe-chamada, .review-criteria-summary, .pix-payment) { border-color: #294b78; background: #0d2038; }
+html[data-theme="dark"] :is(.approved-paper, .review-result) { border-color: #176345; background: #0b2b24; }
+html[data-theme="dark"] .chat-messages { background: #091626; }
+html[data-theme="dark"] .chat-message.bot p { color: #d9e5f6; }
+html[data-theme="dark"] .dialog-close { color: #c1cee0; background: #182a42; }
+html[data-theme="dark"] .auth-tabs { background: #091626; }
+html[data-theme="dark"] .prototype-auth-note { color: #aebdd2; background: #111f33; }
+html[data-theme="dark"] .dashboard-hint { color: #b9c9df !important; background: #102747; }
+html[data-theme="dark"] .dashboard-error, html[data-theme="dark"] .review-conflict-note { color: #fecaca; border-color: #7f1d1d; background: #3a151b; }
+html[data-theme="dark"] .empty-state { background: #0e1c2f; }
+html[data-theme="dark"] .search-panel { background: #0e1c2f; }
+html[data-theme="dark"] .search-field input, html[data-theme="dark"] .select-field select { color: var(--ink); background: #0e1c2f; }
+html[data-theme="dark"] .event-dialog-loading { background: linear-gradient(#0b2863 0 260px, #0e1c2f 260px); }
+html[data-theme="dark"] .badge-document, html[data-theme="dark"] .certificate-document { color: #0f172a; }
+
+@media (max-width: 1000px) {
+  .header-inner:has(.theme-toggle) { grid-template-columns: 1fr auto auto auto; gap: 9px; }
+  html[data-theme="dark"] .main-nav { background: #0e1c2f; }
+}
+@media (max-width: 760px) {
+  .theme-toggle { width: 42px; min-width: 42px; padding: 0; }
+  .theme-toggle-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+}
