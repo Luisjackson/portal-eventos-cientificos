@@ -46,6 +46,8 @@ Para ativar a gestão científica já existente, execute [`supabase/migration_co
 
 Depois, execute [`supabase/migration_self_service_organizations.sql`](./supabase/migration_self_service_organizations.sql). Essa migração remove a necessidade de cadastrar o primeiro organizador manualmente: qualquer usuário autenticado pode criar uma organização em `organizacao.html`, torna-se proprietário dela e pode criar eventos, convidar organizadores e vincular integrantes ao comitê de cada evento. A gestão científica permanece protegida em `comite.html`.
 
+Para permitir que um evento seja salvo como rascunho sem nenhum campo preenchido, execute em seguida [`supabase/migration_optional_organization_events.sql`](./supabase/migration_optional_organization_events.sql). Campos e datas vazios permanecem opcionais; o portal cria apenas um título provisório para identificar o rascunho.
+
 ## Estrutura
 
 - `dist/index.html`: estrutura e conteúdo do portal;
