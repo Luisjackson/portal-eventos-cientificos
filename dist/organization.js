@@ -50,16 +50,25 @@ function switchTab(name) {
 }
 
 function renderOrganizationSelector() {
-  const select = document.querySelector('#organization-select');
-  select.replaceChildren();
+  const list = document.querySelector('#organization-card-list');
+  list.replaceChildren();
   organizations.forEach((organization) => {
-    const option = document.createElement('option');
-    option.value = organization.id;
-    option.textContent = organization.acronym ? `${organization.name} (${organization.acronym})` : organization.name;
-    select.append(option);
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = `organization-choice${organization.id === activeOrganizationId ? ' active' : ''}`;
+    card.setAttribute('aria-pressed', String(organization.id === activeOrganizationId));
+    card.innerHTML = `<span>${escapeHtml(organization.acronym || organization.name.slice(0, 2).toUpperCase())}</span><div><strong>${escapeHtml(organization.name)}</strong><small>${escapeHtml(organization.institution || organization.contact_email)}</small></div><b>${organization.id === activeOrganizationId ? 'Em uso' : 'Acessar'} →</b>`;
+    card.addEventListener('click', () => {
+      activeOrganizationId = organization.id;
+      resetEventForm();
+      renderDashboard();
+      document.querySelector('#organization-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    list.append(card);
   });
-  select.value = activeOrganizationId;
-  document.querySelector('#organization-title').textContent = activeOrganization()?.name || 'Minha organização';
+  const active = activeOrganization();
+  document.querySelector('#organization-title').textContent = active ? active.name : 'Minhas organizações';
+  document.querySelector('#organization-count').textContent = `${organizations.length} ${organizations.length === 1 ? 'organização' : 'organizações'}`;
 }
 
 function fillEventForm(event) {
@@ -154,6 +163,7 @@ async function loadOrganizationData() {
   if (!organizations.length) {
     onboarding.hidden = false;
     dashboard.hidden = true;
+    document.querySelector('#organization-onboarding-cancel').hidden = true;
     document.querySelector('#organization-email').value = currentUser.email || '';
     return;
   }
@@ -248,7 +258,20 @@ document.querySelector('#organization-event-form').addEventListener('submit', sa
 document.querySelector('#organization-member-form').addEventListener('submit', saveOrganizationMember);
 document.querySelector('#event-committee-form').addEventListener('submit', saveCommitteeMember);
 document.querySelector('#organization-event-cancel').addEventListener('click', resetEventForm);
-document.querySelector('#organization-select').addEventListener('change', (event) => { activeOrganizationId = event.target.value; resetEventForm(); renderDashboard(); });
+document.querySelector('#new-organization').addEventListener('click', () => {
+  document.querySelector('#organization-form').reset();
+  document.querySelector('#organization-form-error').textContent = '';
+  document.querySelector('#organization-email').value = currentUser.email || '';
+  document.querySelector('#organization-onboarding-cancel').hidden = false;
+  dashboard.hidden = true;
+  onboarding.hidden = false;
+  document.querySelector('#organization-name').focus();
+});
+document.querySelector('#organization-onboarding-cancel').addEventListener('click', () => {
+  onboarding.hidden = true;
+  dashboard.hidden = false;
+  renderDashboard();
+});
 document.querySelector('.menu-toggle').addEventListener('click', () => { const nav = document.querySelector('#main-nav'); const open = nav.classList.toggle('open'); document.querySelector('.menu-toggle').setAttribute('aria-expanded', String(open)); });
 document.querySelector('#organization-logout').addEventListener('click', async () => { await supabaseClient.auth.signOut(); location.href = './index.html'; });
 
