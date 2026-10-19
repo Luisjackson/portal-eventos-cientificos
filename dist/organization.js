@@ -35,17 +35,49 @@ function activeOrganization() {
 }
 
 function switchTab(name) {
+  const availableTabs = new Set(['events', 'team']);
+  const selectedTab = availableTabs.has(name) ? name : 'events';
   document.querySelectorAll('[data-organization-tab]').forEach((button) => {
-    const active = button.dataset.organizationTab === name;
+    const active = button.dataset.organizationTab === selectedTab;
     button.classList.toggle('active', active);
     if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
   });
   document.querySelectorAll('[data-organization-panel]').forEach((panel) => {
-    const active = panel.dataset.organizationPanel === name;
+    const active = panel.dataset.organizationPanel === selectedTab;
     panel.hidden = !active;
     panel.classList.toggle('active', active);
   });
-  history.replaceState(null, '', `#${name}`);
+  history.replaceState(null, '', `#${selectedTab}`);
+}
+
+function formatDate(value) {
+  if (!value) return 'A definir';
+  return new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR');
+}
+
+function renderOrganizationProfile() {
+  const organization = activeOrganization();
+  if (!organization) return;
+  const organizationEvents = events.filter((event) => event.organization_id === organization.id);
+  const members = organizationMembers.filter((member) => member.organization_id === organization.id);
+  document.querySelector('#organization-profile-mark').textContent = organization.acronym || organization.name.slice(0, 2).toUpperCase();
+  document.querySelector('#organization-profile-name').textContent = organization.name;
+  document.querySelector('#organization-profile-description').textContent = organization.description || 'Nenhuma descrição institucional informada.';
+  document.querySelector('#organization-profile-institution').textContent = organization.institution || 'Não informada';
+  document.querySelector('#organization-profile-contact').textContent = organization.contact_email || 'Não informado';
+  const website = document.querySelector('#organization-profile-website');
+  website.replaceChildren();
+  if (organization.website) {
+    const link = document.createElement('a');
+    link.href = organization.website;
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+    link.textContent = 'Visitar site ↗';
+    website.append(link);
+  } else {
+    website.textContent = 'Não informado';
+  }
+  document.querySelector('#organization-profile-counts').textContent = `${organizationEvents.length} ${organizationEvents.length === 1 ? 'evento' : 'eventos'} · ${members.length} ${members.length === 1 ? 'integrante' : 'integrantes'}`;
 }
 
 function renderOrganizationSelector() {
@@ -104,9 +136,14 @@ function renderEvents() {
   list.replaceChildren();
   eventSelect.replaceChildren(new Option('Selecione um evento', ''));
   organizationEvents.forEach((event) => {
+    const committeeCount = committeeMembers.filter((member) => member.event_id === event.id && member.active).length;
     const article = document.createElement('article');
-    article.innerHTML = `<div><span>${event.published ? 'Publicado' : 'Rascunho'}</span><strong>${escapeHtml(event.event_name)}</strong><p>${escapeHtml(event.location)} · ${escapeHtml(event.format)} · ${(event.modalities || []).length} modalidade(s)</p></div><button class="button button-secondary" type="button">Editar</button>`;
-    article.querySelector('button').addEventListener('click', () => fillEventForm(event));
+    article.innerHTML = `<div class="organization-event-summary"><span>${event.published ? 'Publicado' : 'Rascunho'}</span><strong>${escapeHtml(event.event_name)}</strong><p>${escapeHtml(event.location || 'Local a definir')} · ${escapeHtml(event.format || 'Formato a definir')}</p><dl><div><dt>Período</dt><dd>${formatDate(event.starts_on)} – ${formatDate(event.ends_on)}</dd></div><div><dt>Submissões</dt><dd>${formatDate(event.submission_deadline)}</dd></div><div><dt>Modalidades</dt><dd>${(event.modalities || []).length || 'A definir'}</dd></div><div><dt>Comitê</dt><dd>${committeeCount} ${committeeCount === 1 ? 'integrante' : 'integrantes'}</dd></div></dl></div><div class="organization-event-actions"><button class="button button-secondary" type="button" data-edit-event>Editar evento</button><button class="text-link" type="button" data-manage-committee>Gerir comitê ↓</button><a class="text-link" href="./comite.html">Gestão científica →</a></div>`;
+    article.querySelector('[data-edit-event]').addEventListener('click', () => fillEventForm(event));
+    article.querySelector('[data-manage-committee]').addEventListener('click', () => {
+      eventSelect.value = event.id;
+      document.querySelector('.event-committee-management').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     list.append(article);
     eventSelect.add(new Option(event.event_name, event.id));
   });
@@ -133,10 +170,17 @@ function renderCommittee() {
     article.innerHTML = `<strong>${escapeHtml(member.email)}</strong><span>${escapeHtml(event?.event_name || 'Evento')} · ${member.active ? 'ativo' : 'inativo'}</span>`;
     list.append(article);
   });
+  if (!list.children.length) {
+    const empty = document.createElement('p');
+    empty.className = 'panel-intro';
+    empty.textContent = 'Nenhum integrante vinculado aos comitês desta organização.';
+    list.append(empty);
+  }
 }
 
 function renderDashboard() {
   renderOrganizationSelector();
+  renderOrganizationProfile();
   renderEvents();
   renderMembers();
   renderCommittee();
