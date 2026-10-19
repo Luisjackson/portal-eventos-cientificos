@@ -45,6 +45,12 @@ let selectedReview = null;
 let editingSubmission = null;
 let toastTimer;
 
+const defaultSubmissionEvents = [
+  'Simpósio Brasileiro de Ciência de Dados',
+  'Congresso Nacional de Inovação em Saúde',
+  'Workshop de Robótica e Sistemas Autônomos'
+];
+
 function escapeHtml(value = '') {
   return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 }
@@ -86,6 +92,19 @@ async function loadProfile() {
   if (!currentUser) return;
   const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
   if (!error && data) currentProfile = data;
+}
+
+async function loadSubmissionEventOptions() {
+  const options = document.querySelector('#submission-event-options');
+  const { data, error } = await supabaseClient
+    .from('event_configurations')
+    .select('event_name')
+    .eq('published', true)
+    .order('event_name');
+  const eventNames = new Set(defaultSubmissionEvents);
+  if (!error) (data || []).forEach((event) => { if (event.event_name?.trim()) eventNames.add(event.event_name.trim()); });
+  options.replaceChildren();
+  [...eventNames].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach((eventName) => options.append(new Option(eventName, eventName)));
 }
 
 function updateIdentity() {
@@ -542,7 +561,7 @@ async function submitArticle(event) {
   if (editingSubmission) {
     const submissionId = editingSubmission.id;
     const updates = {
-      event_name: document.querySelector('#submission-event').value,
+      event_name: document.querySelector('#submission-event').value.trim(),
       title: document.querySelector('#submission-title').value.trim(),
       track: document.querySelector('#submission-track').value,
       abstract,
@@ -596,7 +615,7 @@ async function submitArticle(event) {
   }
   const record = {
     id: submissionId, user_id: currentUser.id,
-    event_name: document.querySelector('#submission-event').value,
+    event_name: document.querySelector('#submission-event').value.trim(),
     title: document.querySelector('#submission-title').value.trim(),
     track: document.querySelector('#submission-track').value,
     abstract, original_file_path: storagePath, original_file_name: file.name, status: 'submitted'
@@ -661,7 +680,7 @@ async function saveProfile(event) {
 async function showAuthenticatedArea(user) {
   currentUser = user; authRequired.hidden = true; dashboardContent.hidden = false;
   await loadProfile(); updateIdentity();
-  await Promise.all([loadRegistrations(), loadSubmissions(), loadReviews()]);
+  await Promise.all([loadRegistrations(), loadSubmissions(), loadReviews(), loadSubmissionEventOptions()]);
   updateIdentity();
   document.querySelectorAll('.dashboard-loading-shared').forEach((item) => { item.hidden = true; });
   renderOverview();
