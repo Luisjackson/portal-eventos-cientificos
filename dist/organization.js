@@ -6,6 +6,7 @@ const onboarding = document.querySelector('#organization-onboarding');
 const dashboard = document.querySelector('#organization-dashboard');
 const organizationEditDialog = document.querySelector('#organization-edit-dialog');
 const deleteEventDialog = document.querySelector('#delete-event-dialog');
+const deleteOrganizationDialog = document.querySelector('#delete-organization-dialog');
 const toast = document.querySelector('#toast');
 let organizations = [];
 let events = [];
@@ -312,6 +313,42 @@ async function updateOrganization(event) {
   organizationEditDialog.close(); showToast('Organização atualizada.'); await loadOrganizationData();
 }
 
+function openDeleteOrganizationDialog() {
+  const organization = activeOrganization();
+  if (!organization) return;
+  document.querySelector('#delete-organization-name').textContent = organization.name;
+  document.querySelector('#delete-organization-error').textContent = '';
+  organizationEditDialog.close();
+  deleteOrganizationDialog.showModal();
+}
+
+function closeDeleteOrganizationDialog() {
+  deleteOrganizationDialog.close();
+}
+
+async function deleteOrganization() {
+  const organization = activeOrganization();
+  if (!organization) return;
+  const button = document.querySelector('#confirm-delete-organization');
+  const errorPanel = document.querySelector('#delete-organization-error');
+  setButtonLoading(button, true, 'Excluindo…');
+  errorPanel.textContent = '';
+  const { data: deleted, error } = await supabaseClient.rpc('delete_my_organization', {
+    p_organization_id: organization.id
+  });
+  setButtonLoading(button, false);
+  if (error || !deleted) {
+    errorPanel.textContent = /schema cache|function/i.test(error?.message || '')
+      ? 'Execute migration_delete_organization.sql no Supabase e tente novamente.'
+      : (error?.message || 'Somente o proprietário pode excluir esta organização.');
+    return;
+  }
+  deleteOrganizationDialog.close();
+  activeOrganizationId = null;
+  showToast('Organização excluída permanentemente.');
+  await loadOrganizationData();
+}
+
 function openDeleteEventDialog(event) {
   eventPendingDeletion = event;
   document.querySelector('#delete-event-name').textContent = event.event_name || 'O evento selecionado';
@@ -445,6 +482,9 @@ document.querySelector('#edit-organization').addEventListener('click', openOrgan
 document.querySelector('#organization-edit-form').addEventListener('submit', updateOrganization);
 document.querySelector('#close-organization-edit').addEventListener('click', () => organizationEditDialog.close());
 document.querySelector('#cancel-organization-edit').addEventListener('click', () => organizationEditDialog.close());
+document.querySelector('#open-delete-organization').addEventListener('click', openDeleteOrganizationDialog);
+document.querySelectorAll('[data-close-delete-organization]').forEach((button) => button.addEventListener('click', closeDeleteOrganizationDialog));
+document.querySelector('#confirm-delete-organization').addEventListener('click', deleteOrganization);
 document.querySelectorAll('[data-close-delete-event]').forEach((button) => button.addEventListener('click', closeDeleteEventDialog));
 document.querySelector('#confirm-delete-event').addEventListener('click', deleteOrganizationEvent);
 document.querySelector('#organization-event-form').addEventListener('submit', saveEvent);

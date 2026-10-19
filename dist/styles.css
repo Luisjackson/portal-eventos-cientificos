@@ -353,6 +353,17 @@ html[data-theme="dark"] .organization-event-action:hover { color: white; border-
 html[data-theme="dark"] .organization-event-action.danger { color: #fca5a5; border-color: #7f1d1d; background: #2a1720; }
 html[data-theme="dark"] .organization-event-action.danger:hover { color: #fecaca; background: #3a1820; }
 @media (max-width: 420px) { .organization-event-actions { grid-template-columns: 1fr; } }
+.organization-danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 8px; padding: 16px; border: 1px solid #fecaca; border-radius: 12px; background: #fff7f7; }
+.organization-danger-zone strong, .organization-danger-zone span { display: block; }
+.organization-danger-zone strong { color: #991b1b; font-size: .73rem; }
+.organization-danger-zone span { margin-top: 3px; color: #7f1d1d; font-size: .62rem; line-height: 1.45; }
+.organization-delete-button { flex: 0 0 auto; padding: 9px 12px; color: #b42318; border: 1px solid #fca5a5; border-radius: 9px; background: white; cursor: pointer; font: inherit; font-size: .65rem; font-weight: 750; }
+.organization-delete-button:hover { color: white; background: var(--error); }
+.organization-delete-button:focus-visible { outline: 3px solid rgba(239,68,68,.22); outline-offset: 2px; }
+html[data-theme="dark"] .organization-danger-zone { border-color: #7f1d1d; background: #2a1720; }
+html[data-theme="dark"] .organization-danger-zone strong, html[data-theme="dark"] .organization-danger-zone span { color: #fecaca; }
+html[data-theme="dark"] .organization-delete-button { color: #fca5a5; border-color: #7f1d1d; background: #3a1820; }
+@media (max-width: 600px) { .organization-danger-zone { align-items: stretch; flex-direction: column; }.organization-delete-button { width: 100%; } }
 html[data-theme="dark"] :is(.user-dashboard, .dashboard-page main, .committee-dashboard) { background: #0a1626; }
 html[data-theme="dark"] .organization-onboarding { background: linear-gradient(135deg,#0a1626,#12152d); }
 html[data-theme="dark"] :is(.event-card, .dashboard-card, .dashboard-stats article, .organization-hub, .organization-profile, .committee-submission-card, .committee-participant-card, .review-assignment-card, .portal-dialog, .event-dialog, .registration-dialog, .access-dialog, .cancel-dialog, .submission-dialog, .document-dialog, .chat-panel) { color: var(--ink); border-color: var(--line); background: #0e1c2f; }
