@@ -106,6 +106,7 @@ function fillEventForm(event) {
   document.querySelector('#organization-event-id').value = event.id;
   document.querySelector('#organization-event-name').value = event.event_name || '';
   document.querySelector('#organization-event-description').value = event.description || '';
+  document.querySelector('#organization-event-image').value = '';
   document.querySelector('#organization-event-location').value = event.location || '';
   document.querySelector('#organization-event-format').value = event.format || 'Presencial';
   document.querySelector('#organization-event-start').value = event.starts_on || '';
@@ -138,7 +139,7 @@ function renderEvents() {
   organizationEvents.forEach((event) => {
     const committeeCount = committeeMembers.filter((member) => member.event_id === event.id && member.active).length;
     const article = document.createElement('article');
-    article.innerHTML = `<div class="organization-event-summary"><span>${event.published ? 'Publicado' : 'Rascunho'}</span><strong>${escapeHtml(event.event_name)}</strong><p>${escapeHtml(event.location || 'Local a definir')} · ${escapeHtml(event.format || 'Formato a definir')}</p><dl><div><dt>Período</dt><dd>${formatDate(event.starts_on)} – ${formatDate(event.ends_on)}</dd></div><div><dt>Submissões</dt><dd>${formatDate(event.submission_deadline)}</dd></div><div><dt>Modalidades</dt><dd>${(event.modalities || []).length || 'A definir'}</dd></div><div><dt>Comitê</dt><dd>${committeeCount} ${committeeCount === 1 ? 'integrante' : 'integrantes'}</dd></div></dl></div><div class="organization-event-actions"><button class="button button-secondary" type="button" data-edit-event>Editar evento</button><button class="text-link" type="button" data-manage-committee>Gerir comitê ↓</button><a class="text-link" href="./comite.html">Gestão científica →</a></div>`;
+    article.innerHTML = `${event.cover_image_url ? `<img class="organization-event-cover" src="${escapeHtml(event.cover_image_url)}" alt="" />` : ''}<div class="organization-event-summary"><span>${event.published ? 'Publicado' : 'Rascunho'}</span><strong>${escapeHtml(event.event_name)}</strong><p>${escapeHtml(event.location || 'Local a definir')} · ${escapeHtml(event.format || 'Formato a definir')}</p><dl><div><dt>Período</dt><dd>${formatDate(event.starts_on)} – ${formatDate(event.ends_on)}</dd></div><div><dt>Submissões</dt><dd>${formatDate(event.submission_deadline)}</dd></div><div><dt>Modalidades</dt><dd>${(event.modalities || []).length || 'A definir'}</dd></div><div><dt>Comitê</dt><dd>${committeeCount} ${committeeCount === 1 ? 'integrante' : 'integrantes'}</dd></div></dl></div><div class="organization-event-actions"><button class="button button-secondary" type="button" data-edit-event>Editar evento</button><button class="text-link" type="button" data-manage-committee>Gerir comitê ↓</button><a class="text-link" href="./comite.html">Gestão científica →</a></div>`;
     article.querySelector('[data-edit-event]').addEventListener('click', () => fillEventForm(event));
     article.querySelector('[data-manage-committee]').addEventListener('click', () => {
       eventSelect.value = event.id;
@@ -263,10 +264,26 @@ async function createOrganization(event) {
   await loadOrganizationData();
 }
 
+async function uploadEventImage(eventId, file) {
+  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${activeOrganizationId}/${eventId}/cover-${Date.now()}.${extension}`;
+  const { error: uploadError } = await supabaseClient.storage.from('event-images').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (uploadError) return { error: uploadError };
+  const { data } = supabaseClient.storage.from('event-images').getPublicUrl(path);
+  const coverUrl = data.publicUrl;
+  const { error: updateError } = await supabaseClient.from('event_configurations').update({ cover_image_url: coverUrl }).eq('id', eventId);
+  return { error: updateError, coverUrl };
+}
+
 async function saveEvent(event) {
   event.preventDefault();
   const button = event.currentTarget.querySelector('button[type="submit"]');
   const errorPanel = document.querySelector('#organization-event-error');
+  const imageFile = document.querySelector('#organization-event-image').files[0];
+  if (imageFile && (!['image/png', 'image/jpeg', 'image/webp'].includes(imageFile.type) || imageFile.size > 5 * 1024 * 1024)) {
+    errorPanel.textContent = 'Escolha uma imagem PNG, JPG ou WebP de até 5 MB.';
+    return;
+  }
   setButtonLoading(button, true, 'Salvando…');
   errorPanel.textContent = '';
   const { data: savedEventId, error } = await supabaseClient.rpc('save_organization_event', {
@@ -286,6 +303,18 @@ async function saveEvent(event) {
   });
   setButtonLoading(button, false);
   if (error) { errorPanel.textContent = error.message || 'Não foi possível salvar o evento.'; return; }
+  if (imageFile) {
+    setButtonLoading(button, true, 'Enviando imagem…');
+    const imageResult = await uploadEventImage(savedEventId, imageFile);
+    setButtonLoading(button, false);
+    if (imageResult.error) {
+      errorPanel.textContent = /bucket|cover_image_url|schema cache/i.test(imageResult.error.message || '')
+        ? 'O evento foi salvo, mas a imagem não. Execute supabase/migration_event_images_and_publication.sql no Supabase.'
+        : `O evento foi salvo, mas a imagem não pôde ser enviada: ${imageResult.error.message}`;
+      await loadOrganizationData();
+      return;
+    }
+  }
   resetEventForm();
   showToast('Evento salvo na organização.');
   await loadOrganizationData();

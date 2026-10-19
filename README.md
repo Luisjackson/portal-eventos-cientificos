@@ -52,6 +52,8 @@ Execute também [`supabase/migration_fix_organization_event_listing.sql`](./supa
 
 Para garantir a atualização da lista em **Equipe da organização**, execute [`supabase/migration_fix_organization_team_listing.sql`](./supabase/migration_fix_organization_team_listing.sql).
 
+Para publicar eventos novos no portal com uma imagem de capa opcional, execute [`supabase/migration_event_images_and_publication.sql`](./supabase/migration_event_images_and_publication.sql). A migração adiciona o endereço da capa e cria o bucket público `event-images`, limitado a imagens PNG, JPG e WebP de até 5 MB.
+
 ## Estrutura
 
 - `dist/index.html`: estrutura e conteúdo do portal;

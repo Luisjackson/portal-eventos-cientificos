@@ -4,7 +4,7 @@ const searchForm = document.querySelector('#search-form');
 const searchInput = document.querySelector('#search-input');
 const areaFilter = document.querySelector('#area-filter');
 const chips = [...document.querySelectorAll('[data-filter]')];
-const eventCards = [...document.querySelectorAll('.event-card')];
+let eventCards = [...document.querySelectorAll('.event-card')];
 const emptyState = document.querySelector('#empty-state');
 const loginButton = document.querySelector('.login-button');
 const loginDialog = document.querySelector('#portal-dialog');
@@ -93,8 +93,100 @@ const events = {
 
 function formatManagedDate(start, end) {
   if (!start) return '';
-  const format = (value) => new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-  return end && end !== start ? `${format(start)} a ${format(end)}` : format(start);
+  const format = (value) => {
+    const date = new Date(`${value}T12:00:00`);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  const formattedStart = format(start);
+  const formattedEnd = format(end);
+  if (!formattedStart) return '';
+  return formattedEnd && end !== start ? `${formattedStart} a ${formattedEnd}` : formattedStart;
+}
+
+function managedEventFromConfiguration(configuration, existingEvent = null) {
+  const name = configuration.event_name;
+  const fallback = existingEvent || {};
+  const date = formatManagedDate(configuration.starts_on, configuration.ends_on) || fallback.date || 'Data a definir';
+  const submissionDate = formatManagedDate(configuration.submission_deadline);
+  const reviewDate = formatManagedDate(configuration.review_deadline);
+  const contactEmail = configuration.contact_email || fallback.contactChannels?.email || 'Contato a definir';
+  const modalities = configuration.modalities?.length ? configuration.modalities : (fallback.call?.modalities || ['Modalidades a definir']);
+  const managedDeadlines = [
+    ...(submissionDate ? [{ date: submissionDate, label: 'Prazo para submissões' }] : []),
+    ...(reviewDate ? [{ date: reviewDate, label: 'Prazo para revisões' }] : [])
+  ];
+  return {
+    ...fallback,
+    type: modalities[0] || fallback.type || 'Evento científico',
+    date,
+    location: configuration.location || fallback.location || 'Local a definir',
+    format: (configuration.format || fallback.format || 'presencial').toLowerCase(),
+    deadline: submissionDate ? `submissões até ${submissionDate}` : 'prazo de submissão a definir',
+    registration: fallback.registration || 'Inscrições administradas pela organização do evento.',
+    program: fallback.program || 'A programação detalhada será divulgada pela organização.',
+    contact: contactEmail,
+    aliases: [...new Set([...(fallback.aliases || []), normalize(name), normalize(configuration.location || '')].filter(Boolean))],
+    image: configuration.cover_image_url || fallback.image || './assets/events/data-science.webp',
+    description: configuration.description || fallback.description || 'Evento científico cadastrado por uma organização do portal.',
+    programItems: fallback.programItems || [{ day: configuration.starts_on ? formatManagedDate(configuration.starts_on).toUpperCase() : 'EM BREVE', time: '—', title: 'Programação a ser divulgada', place: configuration.location || 'Local a definir' }],
+    deadlines: managedDeadlines.length ? managedDeadlines : (fallback.deadlines || [{ date: 'A DEFINIR', label: 'Cronograma do evento' }]),
+    call: {
+      status: submissionDate ? 'Chamada aberta' : 'Em preparação',
+      title: fallback.call?.title || 'Chamada de trabalhos do evento',
+      description: fallback.call?.description || 'Consulte as modalidades e os prazos definidos pela organização.',
+      modalities,
+      guidelines: fallback.call?.guidelines || ['Acompanhe esta página para consultar as orientações completas da organização.']
+    },
+    approvedPapers: fallback.approvedPapers || [],
+    contactChannels: {
+      email: contactEmail,
+      phone: fallback.contactChannels?.phone || '',
+      phoneLabel: fallback.contactChannels?.phoneLabel || 'Não informado',
+      service: fallback.contactChannels?.service || 'Consulte o e-mail da organização'
+    }
+  };
+}
+
+function appendManagedEventCard(configuration, event) {
+  if (eventCards.some((card) => card.dataset.eventId === configuration.id)) return;
+  const card = document.createElement('article');
+  card.className = 'event-card';
+  card.dataset.eventId = configuration.id;
+  card.dataset.type = 'evento';
+  card.dataset.area = 'outros';
+  card.dataset.search = `${configuration.event_name} ${configuration.location || ''} ${(configuration.modalities || []).join(' ')}`;
+  const cover = document.createElement('div');
+  cover.className = 'event-cover cover-data';
+  const image = document.createElement('img');
+  image.src = event.image;
+  image.alt = `Imagem de capa de ${configuration.event_name}`;
+  const status = document.createElement('span');
+  status.className = 'status';
+  status.textContent = event.type;
+  cover.append(image, status);
+  const content = document.createElement('div');
+  content.className = 'event-content';
+  const date = document.createElement('p');
+  date.className = 'date-label';
+  date.textContent = event.date;
+  const title = document.createElement('h3');
+  title.textContent = configuration.event_name;
+  const meta = document.createElement('ul');
+  meta.className = 'event-meta managed-event-meta';
+  const location = document.createElement('li');
+  location.textContent = event.location;
+  const deadline = document.createElement('li');
+  deadline.textContent = event.deadline;
+  meta.append(location, deadline);
+  const action = document.createElement('button');
+  action.className = 'card-action';
+  action.type = 'button';
+  action.textContent = 'Ver evento →';
+  action.addEventListener('click', () => openEvent(configuration.event_name));
+  content.append(date, title, meta, action);
+  card.append(cover, content);
+  document.querySelector('#event-grid').append(card);
+  eventCards.push(card);
 }
 
 async function loadPublicManagementData() {
@@ -104,19 +196,18 @@ async function loadPublicManagementData() {
   ]);
   if (!configurationResult.error) {
     (configurationResult.data || []).forEach((configuration) => {
-      const event = events[configuration.event_name];
-      if (!event) return;
-      event.description = configuration.description || event.description;
-      event.location = configuration.location || event.location;
-      event.format = (configuration.format || event.format).toLowerCase();
-      event.date = formatManagedDate(configuration.starts_on, configuration.ends_on) || event.date;
-      if (configuration.submission_deadline) event.deadline = `submissões até ${formatManagedDate(configuration.submission_deadline)}`;
-      if (configuration.contact_email) {
-        event.contactChannels.email = configuration.contact_email;
-        event.contact = configuration.contact_email;
+      const existingEvent = events[configuration.event_name] || null;
+      const event = managedEventFromConfiguration(configuration, existingEvent);
+      events[configuration.event_name] = event;
+      if (existingEvent) {
+        const staticCard = eventCards.find((card) => card.querySelector('[data-event]')?.dataset.event === configuration.event_name);
+        const image = staticCard?.querySelector('.event-cover img');
+        if (image && configuration.cover_image_url) image.src = configuration.cover_image_url;
+      } else {
+        appendManagedEventCard(configuration, event);
       }
-      if (configuration.modalities?.length) event.call.modalities = configuration.modalities;
     });
+    filterEvents();
   }
   if (!articleResult.error) {
     (articleResult.data || []).forEach((article) => {
