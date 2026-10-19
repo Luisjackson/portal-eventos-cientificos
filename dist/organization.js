@@ -5,6 +5,7 @@ const authPanel = document.querySelector('#organization-auth');
 const onboarding = document.querySelector('#organization-onboarding');
 const dashboard = document.querySelector('#organization-dashboard');
 const organizationEditDialog = document.querySelector('#organization-edit-dialog');
+const deleteEventDialog = document.querySelector('#delete-event-dialog');
 const toast = document.querySelector('#toast');
 let organizations = [];
 let events = [];
@@ -12,6 +13,7 @@ let organizationMembers = [];
 let committeeMembers = [];
 let activeOrganizationId = null;
 let currentUser = null;
+let eventPendingDeletion = null;
 let toastTimer;
 
 function escapeHtml(value = '') {
@@ -143,12 +145,13 @@ function renderEvents() {
   organizationEvents.forEach((event) => {
     const committeeCount = committeeMembers.filter((member) => member.event_id === event.id && member.active).length;
     const article = document.createElement('article');
-    article.innerHTML = `${event.cover_image_url ? `<img class="organization-event-cover" src="${escapeHtml(event.cover_image_url)}" alt="" />` : ''}<div class="organization-event-summary"><span>${event.published ? 'Publicado' : 'Rascunho'}</span><strong>${escapeHtml(event.event_name)}</strong><p>${escapeHtml(event.location || 'Local a definir')} · ${escapeHtml(event.format || 'Formato a definir')}</p><dl><div><dt>Período</dt><dd>${formatDate(event.starts_on)} – ${formatDate(event.ends_on)}</dd></div><div><dt>Submissões</dt><dd>${formatDate(event.submission_deadline)}</dd></div><div><dt>Modalidades</dt><dd>${(event.modalities || []).length || 'A definir'}</dd></div><div><dt>Comitê</dt><dd>${committeeCount} ${committeeCount === 1 ? 'integrante' : 'integrantes'}</dd></div></dl></div><div class="organization-event-actions"><button class="button button-secondary" type="button" data-edit-event>Editar evento</button><button class="text-link" type="button" data-manage-committee>Gerir comitê ↓</button><a class="text-link" href="./comite.html">Gestão científica →</a></div>`;
+    article.innerHTML = `${event.cover_image_url ? `<img class="organization-event-cover" src="${escapeHtml(event.cover_image_url)}" alt="" />` : ''}<div class="organization-event-summary"><span>${event.published ? 'Publicado' : 'Rascunho'}</span><strong>${escapeHtml(event.event_name)}</strong><p>${escapeHtml(event.location || 'Local a definir')} · ${escapeHtml(event.format || 'Formato a definir')}</p><dl><div><dt>Período</dt><dd>${formatDate(event.starts_on)} – ${formatDate(event.ends_on)}</dd></div><div><dt>Submissões</dt><dd>${formatDate(event.submission_deadline)}</dd></div><div><dt>Modalidades</dt><dd>${(event.modalities || []).length || 'A definir'}</dd></div><div><dt>Comitê</dt><dd>${committeeCount} ${committeeCount === 1 ? 'integrante' : 'integrantes'}</dd></div></dl></div><div class="organization-event-actions"><button class="button button-secondary" type="button" data-edit-event>Editar evento</button><button class="text-link" type="button" data-manage-committee>Gerir comitê ↓</button><a class="text-link" href="./comite.html">Gestão científica →</a><button class="event-delete-button" type="button" data-delete-event>Excluir evento</button></div>`;
     article.querySelector('[data-edit-event]').addEventListener('click', () => fillEventForm(event));
     article.querySelector('[data-manage-committee]').addEventListener('click', () => {
       eventSelect.value = event.id;
       document.querySelector('.event-committee-management').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+    article.querySelector('[data-delete-event]').addEventListener('click', () => openDeleteEventDialog(event));
     list.append(article);
     eventSelect.add(new Option(event.event_name, event.id));
   });
@@ -309,6 +312,42 @@ async function updateOrganization(event) {
   organizationEditDialog.close(); showToast('Organização atualizada.'); await loadOrganizationData();
 }
 
+function openDeleteEventDialog(event) {
+  eventPendingDeletion = event;
+  document.querySelector('#delete-event-name').textContent = event.event_name || 'O evento selecionado';
+  document.querySelector('#delete-event-error').textContent = '';
+  deleteEventDialog.showModal();
+}
+
+function closeDeleteEventDialog() {
+  deleteEventDialog.close();
+  eventPendingDeletion = null;
+}
+
+async function deleteOrganizationEvent() {
+  if (!eventPendingDeletion) return;
+  const button = document.querySelector('#confirm-delete-event');
+  const errorPanel = document.querySelector('#delete-event-error');
+  setButtonLoading(button, true, 'Excluindo…');
+  errorPanel.textContent = '';
+  const { data: deleted, error } = await supabaseClient.rpc('delete_organization_event', {
+    p_event_id: eventPendingDeletion.id,
+    p_organization_id: activeOrganizationId
+  });
+  setButtonLoading(button, false);
+  if (error || !deleted) {
+    errorPanel.textContent = /schema cache|function/i.test(error?.message || '')
+      ? 'Execute migration_delete_organization_event.sql no Supabase e tente novamente.'
+      : (error?.message || 'Não foi possível excluir este evento.');
+    return;
+  }
+  const deletedEventId = eventPendingDeletion.id;
+  closeDeleteEventDialog();
+  if (document.querySelector('#organization-event-id').value === deletedEventId) resetEventForm();
+  showToast('Evento excluído da organização.');
+  await loadOrganizationData();
+}
+
 async function uploadEventImage(eventId, file) {
   const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const path = `${activeOrganizationId}/${eventId}/cover-${Date.now()}.${extension}`;
@@ -406,6 +445,8 @@ document.querySelector('#edit-organization').addEventListener('click', openOrgan
 document.querySelector('#organization-edit-form').addEventListener('submit', updateOrganization);
 document.querySelector('#close-organization-edit').addEventListener('click', () => organizationEditDialog.close());
 document.querySelector('#cancel-organization-edit').addEventListener('click', () => organizationEditDialog.close());
+document.querySelectorAll('[data-close-delete-event]').forEach((button) => button.addEventListener('click', closeDeleteEventDialog));
+document.querySelector('#confirm-delete-event').addEventListener('click', deleteOrganizationEvent);
 document.querySelector('#organization-event-form').addEventListener('submit', saveEvent);
 document.querySelector('#organization-member-form').addEventListener('submit', saveOrganizationMember);
 document.querySelector('#event-committee-form').addEventListener('submit', saveCommitteeMember);

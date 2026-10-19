@@ -340,6 +340,9 @@ html[data-theme="dark"] .refresh-icon-button:hover { background: #183252; }
 html[data-theme="dark"] .organization-edit-button { color: var(--blue); border-color: #385a84; background: #12233a; }
 html[data-theme="dark"] .organization-edit-button:hover { color: white; background: var(--blue); }
 @media (max-width: 600px) { .organization-edit-button { width: 42px; justify-self: end; } }
+.event-delete-button { margin-left: auto; padding: 8px 3px; color: var(--error); border: 0; background: transparent; cursor: pointer; font: inherit; font-size: .68rem; font-weight: 700; }
+.event-delete-button:hover { color: #b91c1c; text-decoration: underline; }
+.event-delete-button:focus-visible { outline: 3px solid rgba(239,68,68,.22); outline-offset: 3px; }
 html[data-theme="dark"] :is(.user-dashboard, .dashboard-page main, .committee-dashboard) { background: #0a1626; }
 html[data-theme="dark"] .organization-onboarding { background: linear-gradient(135deg,#0a1626,#12152d); }
 html[data-theme="dark"] :is(.event-card, .dashboard-card, .dashboard-stats article, .organization-hub, .organization-profile, .committee-submission-card, .committee-participant-card, .review-assignment-card, .portal-dialog, .event-dialog, .registration-dialog, .access-dialog, .cancel-dialog, .submission-dialog, .document-dialog, .chat-panel) { color: var(--ink); border-color: var(--line); background: #0e1c2f; }
