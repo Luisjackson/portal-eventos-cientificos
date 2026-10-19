@@ -349,7 +349,8 @@ document.querySelector('#organization-members-refresh').addEventListener('click'
 document.querySelector('#event-committee-refresh').addEventListener('click', async (event) => {
   const button = event.currentTarget;
   const errorPanel = document.querySelector('#event-committee-error');
-  setButtonLoading(button, true, 'Atualizando…');
+  button.disabled = true;
+  button.classList.add('loading');
   errorPanel.textContent = '';
   try {
     await loadOrganizationData();
@@ -357,7 +358,8 @@ document.querySelector('#event-committee-refresh').addEventListener('click', asy
   } catch (error) {
     errorPanel.textContent = error.message || 'Não foi possível atualizar a lista do comitê.';
   } finally {
-    setButtonLoading(button, false);
+    button.disabled = false;
+    button.classList.remove('loading');
   }
 });
 document.querySelector('#new-organization').addEventListener('click', () => {
