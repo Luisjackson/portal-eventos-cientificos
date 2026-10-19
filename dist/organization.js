@@ -4,6 +4,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
 const authPanel = document.querySelector('#organization-auth');
 const onboarding = document.querySelector('#organization-onboarding');
 const dashboard = document.querySelector('#organization-dashboard');
+const organizationEditDialog = document.querySelector('#organization-edit-dialog');
 const toast = document.querySelector('#toast');
 let organizations = [];
 let events = [];
@@ -60,7 +61,9 @@ function renderOrganizationProfile() {
   if (!organization) return;
   const organizationEvents = events.filter((event) => event.organization_id === organization.id);
   const members = organizationMembers.filter((member) => member.organization_id === organization.id);
-  document.querySelector('#organization-profile-mark').textContent = organization.acronym || organization.name.slice(0, 2).toUpperCase();
+  const profileMark = document.querySelector('#organization-profile-mark');
+  profileMark.textContent = organization.acronym || organization.name.slice(0, 2).toUpperCase();
+  profileMark.style.background = organization.brand_color || '#2563EB';
   document.querySelector('#organization-profile-name').textContent = organization.name;
   document.querySelector('#organization-profile-description').textContent = organization.description || 'Nenhuma descrição institucional informada.';
   document.querySelector('#organization-profile-institution').textContent = organization.institution || 'Não informada';
@@ -78,6 +81,7 @@ function renderOrganizationProfile() {
     website.textContent = 'Não informado';
   }
   document.querySelector('#organization-profile-counts').textContent = `${organizationEvents.length} ${organizationEvents.length === 1 ? 'evento' : 'eventos'} · ${members.length} ${members.length === 1 ? 'integrante' : 'integrantes'}`;
+  document.querySelector('#edit-organization').hidden = organization.created_by !== currentUser.id;
 }
 
 function renderOrganizationSelector() {
@@ -88,7 +92,7 @@ function renderOrganizationSelector() {
     card.type = 'button';
     card.className = `organization-choice${organization.id === activeOrganizationId ? ' active' : ''}`;
     card.setAttribute('aria-pressed', String(organization.id === activeOrganizationId));
-    card.innerHTML = `<span>${escapeHtml(organization.acronym || organization.name.slice(0, 2).toUpperCase())}</span><div><strong>${escapeHtml(organization.name)}</strong><small>${escapeHtml(organization.institution || organization.contact_email)}</small></div><b>${organization.id === activeOrganizationId ? 'Em uso' : 'Acessar'} →</b>`;
+    card.innerHTML = `<span style="background:${escapeHtml(organization.brand_color || '#2563EB')}">${escapeHtml(organization.acronym || organization.name.slice(0, 2).toUpperCase())}</span><div><strong>${escapeHtml(organization.name)}</strong><small>${escapeHtml(organization.institution || organization.contact_email)}</small></div><b>${organization.id === activeOrganizationId ? 'Em uso' : 'Acessar'} →</b>`;
     card.addEventListener('click', () => {
       activeOrganizationId = organization.id;
       resetEventForm();
@@ -264,6 +268,47 @@ async function createOrganization(event) {
   await loadOrganizationData();
 }
 
+function openOrganizationEdit() {
+  const organization = activeOrganization();
+  if (!organization) return;
+  document.querySelector('#edit-organization-name').value = organization.name || '';
+  document.querySelector('#edit-organization-acronym').value = organization.acronym || '';
+  document.querySelector('#edit-organization-institution').value = organization.institution || '';
+  document.querySelector('#edit-organization-description').value = organization.description || '';
+  document.querySelector('#edit-organization-email').value = organization.contact_email || '';
+  document.querySelector('#edit-organization-website').value = organization.website || '';
+  const color = organization.brand_color || '#2563EB';
+  const colorInput = document.querySelector(`input[name="organization-color"][value="${color}"]`) || document.querySelector('input[name="organization-color"][value="#2563EB"]');
+  colorInput.checked = true;
+  document.querySelector('#organization-edit-error').textContent = '';
+  organizationEditDialog.showModal();
+}
+
+async function updateOrganization(event) {
+  event.preventDefault();
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  const errorPanel = document.querySelector('#organization-edit-error');
+  setButtonLoading(button, true, 'Salvando…'); errorPanel.textContent = '';
+  const { data: updated, error } = await supabaseClient.rpc('update_my_organization', {
+    p_organization_id: activeOrganizationId,
+    p_name: document.querySelector('#edit-organization-name').value.trim(),
+    p_acronym: document.querySelector('#edit-organization-acronym').value.trim(),
+    p_description: document.querySelector('#edit-organization-description').value.trim(),
+    p_institution: document.querySelector('#edit-organization-institution').value.trim(),
+    p_contact_email: document.querySelector('#edit-organization-email').value.trim(),
+    p_website: document.querySelector('#edit-organization-website').value.trim(),
+    p_brand_color: document.querySelector('input[name="organization-color"]:checked').value
+  });
+  setButtonLoading(button, false);
+  if (error || !updated) {
+    errorPanel.textContent = /schema cache|function/i.test(error?.message || '')
+      ? 'Execute migration_edit_organization.sql no Supabase e tente novamente.'
+      : (error?.message || 'Somente o proprietário pode editar esta organização.');
+    return;
+  }
+  organizationEditDialog.close(); showToast('Organização atualizada.'); await loadOrganizationData();
+}
+
 async function uploadEventImage(eventId, file) {
   const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const path = `${activeOrganizationId}/${eventId}/cover-${Date.now()}.${extension}`;
@@ -357,6 +402,10 @@ async function saveCommitteeMember(event) {
 
 document.querySelectorAll('[data-organization-tab]').forEach((button) => button.addEventListener('click', () => switchTab(button.dataset.organizationTab)));
 document.querySelector('#organization-form').addEventListener('submit', createOrganization);
+document.querySelector('#edit-organization').addEventListener('click', openOrganizationEdit);
+document.querySelector('#organization-edit-form').addEventListener('submit', updateOrganization);
+document.querySelector('#close-organization-edit').addEventListener('click', () => organizationEditDialog.close());
+document.querySelector('#cancel-organization-edit').addEventListener('click', () => organizationEditDialog.close());
 document.querySelector('#organization-event-form').addEventListener('submit', saveEvent);
 document.querySelector('#organization-member-form').addEventListener('submit', saveOrganizationMember);
 document.querySelector('#event-committee-form').addEventListener('submit', saveCommitteeMember);
