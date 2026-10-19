@@ -42,7 +42,7 @@ let currentRegistrationEvent = null;
 
 const events = {
   'Simpósio Brasileiro de Ciência de Dados': {
-    type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores demonstrativos de R$ 60 para estudantes e R$ 120 para profissionais', program: 'no dia 12, credenciamento às 8h30, abertura às 10h, sessões técnicas às 14h e painel sobre IA responsável às 16h30', contact: 'dados2026@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], image: './assets/events/data-science.webp', description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.',
+    type: 'Simpósio', date: '12 a 15 de novembro de 2026', location: 'Salvador · BA', format: 'presencial', deadline: 'submissões até 8 de outubro de 2026', registration: 'inscrições abertas; valores de R$ 60 para estudantes e R$ 120 para profissionais', program: 'no dia 12, credenciamento às 8h30, abertura às 10h, sessões técnicas às 14h e painel sobre IA responsável às 16h30', contact: 'dados2026@universidade.br · (71) 3000-2026', aliases: ['simposio', 'ciencia de dados', 'dados', 'salvador'], image: './assets/events/data-science.webp', description: 'Pesquisadores, estudantes e profissionais discutem aplicações responsáveis de dados em ciência, indústria e políticas públicas.',
     programItems: [
       { day: '12 NOV', time: '08:30', title: 'Credenciamento e acolhimento', place: 'Hall principal' },
       { day: '12 NOV', time: '10:00', title: 'Abertura: dados para transformação social', place: 'Auditório central' },
@@ -58,7 +58,7 @@ const events = {
     contactChannels: { email: 'dados2026@universidade.br', phone: '+557130002026', phoneLabel: '(71) 3000-2026', service: 'Segunda a sexta, das 9h às 17h' }
   },
   'Congresso Nacional de Inovação em Saúde': {
-    type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'chamada de pôsteres até 2 de novembro de 2026', registration: 'inscrições abertas no protótipo', program: 'no dia 22, abertura às 9h, mesa de saúde digital às 10h30, pôsteres às 14h e debate sobre inovação no SUS às 16h', contact: 'saudeinovacao@congresso.org.br · (81) 3200-1188', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], image: './assets/events/health-innovation.webp', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.',
+    type: 'Congresso', date: '22 a 24 de novembro de 2026', location: 'Recife · PE', format: 'presencial', deadline: 'chamada de pôsteres até 2 de novembro de 2026', registration: 'inscrições abertas', program: 'no dia 22, abertura às 9h, mesa de saúde digital às 10h30, pôsteres às 14h e debate sobre inovação no SUS às 16h', contact: 'saudeinovacao@congresso.org.br · (81) 3200-1188', aliases: ['congresso', 'saude', 'recife', 'inovacao em saude'], image: './assets/events/health-innovation.webp', description: 'Um encontro dedicado a novas tecnologias, práticas clínicas e pesquisas que ampliam o acesso à saúde.',
     programItems: [
       { day: '22 NOV', time: '09:00', title: 'Cerimônia de abertura', place: 'Auditório Recife' },
       { day: '22 NOV', time: '10:30', title: 'Mesa: saúde digital e cuidado conectado', place: 'Auditório Recife' },
@@ -74,7 +74,7 @@ const events = {
     contactChannels: { email: 'saudeinovacao@congresso.org.br', phone: '+558132001188', phoneLabel: '(81) 3200-1188', service: 'Segunda a sexta, das 8h às 16h' }
   },
   'Workshop de Robótica e Sistemas Autônomos': {
-    type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'propostas de projetos até 20 de novembro de 2026', registration: 'inscrições abertas no protótipo', program: 'credenciamento às 8h, oficina de sensores às 9h, desafio de robôs às 13h30 e mostra de projetos às 16h', contact: 'robotica@workshop.org.br · (75) 3224-5090', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], image: './assets/events/robotics-workshop.webp', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.',
+    type: 'Workshop', date: '5 de dezembro de 2026', location: 'Feira de Santana · BA', format: 'presencial', deadline: 'propostas de projetos até 20 de novembro de 2026', registration: 'inscrições abertas', program: 'credenciamento às 8h, oficina de sensores às 9h, desafio de robôs às 13h30 e mostra de projetos às 16h', contact: 'robotica@workshop.org.br · (75) 3224-5090', aliases: ['workshop', 'robotica', 'sistemas autonomos', 'feira de santana'], image: './assets/events/robotics-workshop.webp', description: 'Atividades práticas sobre robótica, automação e sistemas autônomos para estudantes e pesquisadores.',
     programItems: [
       { day: '05 DEZ', time: '08:00', title: 'Credenciamento e formação das equipes', place: 'Laboratório maker' },
       { day: '05 DEZ', time: '09:00', title: 'Oficina de sensores e visão computacional', place: 'Laboratório 2' },
@@ -393,9 +393,8 @@ function setAuthMode(mode) {
   loginForm.hidden = signup;
   signupForm.hidden = !signup;
   document.querySelector('#dialog-title').textContent = signup ? 'Crie sua conta' : 'Entre na sua conta';
-  document.querySelector('#dialog-description').textContent = signup
-    ? 'Cadastre seus dados para acessar as áreas do portal.'
-    : 'Acompanhe inscrições, submissões e atividades do evento.';
+  document.querySelector('#dialog-description').hidden = true;
+  document.querySelector('#dialog-description').textContent = '';
   document.querySelectorAll('[data-auth-mode]').forEach((button) => {
     const active = button.dataset.authMode === mode;
     button.classList.toggle('active', active);
@@ -436,6 +435,7 @@ function showPasswordRecovery() {
   accountPanel.hidden = true;
   document.querySelector('#dialog-title').textContent = 'Crie uma nova senha';
   document.querySelector('#dialog-description').textContent = 'Digite a nova senha para recuperar o acesso à sua conta.';
+  document.querySelector('#dialog-description').hidden = false;
   document.querySelector('.auth-tabs').hidden = true;
   document.querySelector('#recovery-form').hidden = false;
   window.setTimeout(() => document.querySelector('#recovery-password').focus(), 0);
@@ -711,6 +711,7 @@ document.querySelector('[data-start-registration]').addEventListener('click', ()
   if (!getSession()) {
     setAuthMode('login');
     document.querySelector('#dialog-description').textContent = 'Entre ou crie sua conta para se inscrever neste evento.';
+    document.querySelector('#dialog-description').hidden = false;
     loginDialog.showModal();
     return;
   }
