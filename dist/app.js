@@ -247,13 +247,14 @@ function answerEventQuestion(question) {
   const selected = match || currentChatEvent;
 
   if (/quais|listar|disponiveis|cadastrados|todos os eventos/.test(normalized) && /evento/.test(normalized)) {
-    return `Temos 3 eventos cadastrados:\n• Simpósio Brasileiro de Ciência de Dados — Salvador\n• Congresso Nacional de Inovação em Saúde — Recife\n• Workshop de Robótica e Sistemas Autônomos — Feira de Santana`;
+    const availableEvents = Object.entries(events);
+    return `${availableEvents.length} eventos publicados:\n${availableEvents.map(([name, event]) => `• ${name} — ${event.location}`).join('\n')}`;
   }
   if (/proximo prazo|prazos proximos|prazo geral/.test(normalized)) {
-    return 'O próximo prazo é 8 de outubro de 2026, para submissão de artigos no Simpósio Brasileiro de Ciência de Dados.';
+    return `Prazos cadastrados:\n${Object.entries(events).map(([name, event]) => `• ${name}: ${event.deadline}`).join('\n')}`;
   }
   if (!selected) {
-    return 'Sobre qual evento você quer saber? Pode escrever “Ciência de Dados”, “Inovação em Saúde” ou “Robótica”.';
+    return `Sobre qual evento você quer saber? Posso consultar qualquer um dos ${Object.keys(events).length} eventos publicados.`;
   }
 
   const [name, event] = selected;
