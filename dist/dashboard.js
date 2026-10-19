@@ -95,7 +95,7 @@ async function loadProfile() {
 }
 
 async function loadSubmissionEventOptions() {
-  const select = document.querySelector('#submission-event-select');
+  const select = document.querySelector('#submission-event');
   const { data, error } = await supabaseClient
     .from('event_configurations')
     .select('event_name')
@@ -104,17 +104,6 @@ async function loadSubmissionEventOptions() {
   if (!error) (data || []).forEach((event) => { if (event.event_name?.trim()) eventNames.add(event.event_name.trim()); });
   select.replaceChildren(new Option('Selecione um evento disponível', ''));
   [...eventNames].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach((eventName) => select.add(new Option(eventName, eventName)));
-  select.add(new Option('Outro evento — digitar nome', '__custom__'));
-}
-
-function updateSubmissionEventField() {
-  const select = document.querySelector('#submission-event-select');
-  const customField = document.querySelector('#submission-custom-event-field');
-  const customInput = document.querySelector('#submission-event-custom');
-  const custom = select.value === '__custom__';
-  customField.hidden = !custom;
-  customInput.required = custom;
-  document.querySelector('#submission-event').value = custom ? customInput.value.trim() : select.value;
 }
 
 function updateIdentity() {
@@ -524,7 +513,6 @@ function addCoauthorRow(values = {}) {
 function openSubmission(submission = null) {
   editingSubmission = submission;
   document.querySelector('#submission-form').reset();
-  updateSubmissionEventField();
   document.querySelector('#coauthor-list').replaceChildren();
   document.querySelector('#submission-form-error').textContent = '';
   const fileInput = document.querySelector('#submission-file');
@@ -540,11 +528,10 @@ function openSubmission(submission = null) {
   reviewerInput.required = !editing;
   reviewerInput.disabled = editing;
   if (editing) {
-    const eventSelect = document.querySelector('#submission-event-select');
+    const eventSelect = document.querySelector('#submission-event');
     const available = [...eventSelect.options].some((option) => option.value === submission.event_name);
-    eventSelect.value = available ? submission.event_name : '__custom__';
-    document.querySelector('#submission-event-custom').value = available ? '' : submission.event_name;
-    updateSubmissionEventField();
+    if (!available && submission.event_name) eventSelect.add(new Option(submission.event_name, submission.event_name));
+    eventSelect.value = submission.event_name;
     document.querySelector('#submission-title').value = submission.title;
     document.querySelector('#submission-track').value = submission.track;
     document.querySelector('#submission-abstract').value = submission.abstract;
@@ -561,9 +548,8 @@ async function submitArticle(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const errorPanel = document.querySelector('#submission-form-error');
-  updateSubmissionEventField();
   if (!document.querySelector('#submission-event').value.trim()) {
-    errorPanel.textContent = 'Selecione um evento ou digite o nome do evento.';
+    errorPanel.textContent = 'Selecione um evento.';
     return;
   }
   const file = document.querySelector('#submission-file').files[0];
@@ -729,11 +715,6 @@ document.querySelector('#new-submission').addEventListener('click', () => openSu
 document.querySelectorAll('[data-open-submission]').forEach((button) => button.addEventListener('click', () => openSubmission()));
 document.querySelectorAll('[data-close-submission]').forEach((button) => button.addEventListener('click', () => { submissionDialog.close(); editingSubmission = null; }));
 document.querySelector('#add-coauthor').addEventListener('click', () => addCoauthorRow());
-document.querySelector('#submission-event-select').addEventListener('change', () => {
-  updateSubmissionEventField();
-  if (document.querySelector('#submission-event-select').value === '__custom__') document.querySelector('#submission-event-custom').focus();
-});
-document.querySelector('#submission-event-custom').addEventListener('input', updateSubmissionEventField);
 document.querySelector('#submission-form').addEventListener('submit', submitArticle);
 document.querySelectorAll('[data-close-final]').forEach((button) => button.addEventListener('click', () => finalVersionDialog.close()));
 document.querySelector('#final-version-form').addEventListener('submit', submitFinalVersion);
