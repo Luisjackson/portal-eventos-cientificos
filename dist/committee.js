@@ -90,7 +90,7 @@ function fillEventForm(event) {
   document.querySelector('#event-config-name').value = event.event_name || '';
   document.querySelector('#event-config-description').value = event.description || '';
   document.querySelector('#event-config-location').value = event.location || '';
-  document.querySelector('#event-config-format').value = event.format || 'Presencial';
+  document.querySelector('#event-config-format').value = event.format || '';
   document.querySelector('#event-config-start').value = event.starts_on || '';
   document.querySelector('#event-config-end').value = event.ends_on || '';
   document.querySelector('#event-config-submission-deadline').value = event.submission_deadline || '';
@@ -105,15 +105,16 @@ async function saveEvent(event) {
   event.preventDefault();
   const errorPanel = document.querySelector('#event-config-error');
   const button = event.currentTarget.querySelector('button[type="submit"]');
+  const eventName = document.querySelector('#event-config-name').value.trim() || `Evento sem título ${Date.now().toString().slice(-6)}`;
   const record = {
-    event_name: document.querySelector('#event-config-name').value.trim(),
+    event_name: eventName,
     description: document.querySelector('#event-config-description').value.trim(),
     location: document.querySelector('#event-config-location').value.trim(),
-    format: document.querySelector('#event-config-format').value,
-    starts_on: document.querySelector('#event-config-start').value,
-    ends_on: document.querySelector('#event-config-end').value,
-    submission_deadline: document.querySelector('#event-config-submission-deadline').value,
-    review_deadline: document.querySelector('#event-config-review-deadline').value,
+    format: document.querySelector('#event-config-format').value || 'Presencial',
+    starts_on: document.querySelector('#event-config-start').value || null,
+    ends_on: document.querySelector('#event-config-end').value || null,
+    submission_deadline: document.querySelector('#event-config-submission-deadline').value || null,
+    review_deadline: document.querySelector('#event-config-review-deadline').value || null,
     modalities: document.querySelector('#event-config-modalities').value.split(',').map((item) => item.trim()).filter(Boolean),
     contact_email: document.querySelector('#event-config-contact').value.trim().toLowerCase(),
     published: document.querySelector('#event-config-published').checked,
@@ -122,7 +123,7 @@ async function saveEvent(event) {
   button.disabled = true; button.textContent = 'Salvando…'; errorPanel.textContent = '';
   const { error } = await supabaseClient.from('event_configurations').upsert(record, { onConflict: 'event_name' });
   button.disabled = false; button.textContent = 'Salvar configuração';
-  if (error) { errorPanel.textContent = 'Não foi possível salvar a configuração.'; return; }
+  if (error) { errorPanel.textContent = error.message || 'Não foi possível salvar a configuração.'; return; }
   showToast('Configuração do evento salva.'); event.currentTarget.reset(); await loadData();
 }
 
