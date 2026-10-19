@@ -1,4 +1,4 @@
-# Portal de Eventos Científicos
+# Alexandria
 
 Esboço inicial navegável para a atividade de IHC da UNEB. A primeira entrega cobre a área pública do portal e demonstra:
 
