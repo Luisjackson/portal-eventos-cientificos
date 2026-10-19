@@ -38,6 +38,25 @@ function activeOrganization() {
   return organizations.find((organization) => organization.id === activeOrganizationId);
 }
 
+function installEventPublicContentFields() {
+  const errorPanel = document.querySelector('#organization-event-error');
+  const section = document.createElement('fieldset');
+  section.className = 'event-public-content-fields wide';
+  section.innerHTML = `<legend>Conteúdo da página pública <small>Opcional</small></legend><p>Estas informações aparecerão nos detalhes públicos do evento.</p><label class="wide">Programação<textarea id="organization-event-program" rows="5" placeholder="12 NOV | 09:00 | Abertura oficial | Auditório principal&#10;12 NOV | 14:00 | Sessão de artigos | Sala 2"></textarea><small>Uma atividade por linha: dia | horário | atividade | local.</small></label><label class="wide">Título da chamada<input id="organization-event-call-title" placeholder="Ex.: Chamada de artigos e resumos" /></label><label class="wide">Texto completo da chamada<textarea id="organization-event-call-description" rows="4" placeholder="Apresente os temas, público e objetivos da chamada."></textarea></label><label class="wide">Orientações para submissão<textarea id="organization-event-guidelines" rows="4" placeholder="Uma orientação por linha"></textarea><small>Escreva uma orientação por linha.</small></label><label>Telefone de contato<input id="organization-event-phone" type="tel" placeholder="(71) 3000-0000" /></label><label>Horário de atendimento<input id="organization-event-service-hours" placeholder="Segunda a sexta, das 9h às 17h" /></label>`;
+  errorPanel.before(section);
+}
+
+function parseProgramLines(value) {
+  return value.split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
+    const [day = '', time = '', title = '', place = ''] = line.split('|').map((part) => part.trim());
+    return { day, time, title: title || time || day, place };
+  });
+}
+
+function formatProgramLines(items = []) {
+  return items.map((item) => [item.day, item.time, item.title, item.place].map((value) => value || '').join(' | ')).join('\n');
+}
+
 function switchTab(name) {
   const availableTabs = new Set(['events', 'team']);
   const selectedTab = availableTabs.has(name) ? name : 'events';
@@ -122,6 +141,12 @@ function fillEventForm(event) {
   document.querySelector('#organization-event-review').value = event.review_deadline || '';
   document.querySelector('#organization-event-modalities').value = (event.modalities || []).join(', ');
   document.querySelector('#organization-event-contact').value = event.contact_email || '';
+  document.querySelector('#organization-event-program').value = formatProgramLines(event.program_items || []);
+  document.querySelector('#organization-event-call-title').value = event.call_title || '';
+  document.querySelector('#organization-event-call-description').value = event.call_description || '';
+  document.querySelector('#organization-event-guidelines').value = (event.submission_guidelines || []).join('\n');
+  document.querySelector('#organization-event-phone').value = event.contact_phone || '';
+  document.querySelector('#organization-event-service-hours').value = event.service_hours || '';
   document.querySelector('#organization-event-published').checked = Boolean(event.published);
   document.querySelector('#organization-event-form-title').textContent = 'Editar evento';
   document.querySelector('#organization-event-cancel').hidden = false;
@@ -424,6 +449,22 @@ async function saveEvent(event) {
   });
   setButtonLoading(button, false);
   if (error) { errorPanel.textContent = error.message || 'Não foi possível salvar o evento.'; return; }
+  const { error: contentError } = await supabaseClient.rpc('save_event_public_content', {
+    p_event_id: savedEventId,
+    p_program_items: parseProgramLines(document.querySelector('#organization-event-program').value),
+    p_call_title: document.querySelector('#organization-event-call-title').value.trim(),
+    p_call_description: document.querySelector('#organization-event-call-description').value.trim(),
+    p_submission_guidelines: document.querySelector('#organization-event-guidelines').value.split('\n').map((line) => line.trim()).filter(Boolean),
+    p_contact_phone: document.querySelector('#organization-event-phone').value.trim(),
+    p_service_hours: document.querySelector('#organization-event-service-hours').value.trim()
+  });
+  if (contentError) {
+    errorPanel.textContent = /schema cache|function|column/i.test(contentError.message || '')
+      ? 'O evento foi salvo, mas o conteúdo público não. Execute migration_event_public_content.sql no Supabase.'
+      : `O evento foi salvo, mas o conteúdo público não pôde ser atualizado: ${contentError.message}`;
+    await loadOrganizationData();
+    return;
+  }
   if (imageFile) {
     setButtonLoading(button, true, 'Enviando imagem…');
     const imageResult = await uploadEventImage(savedEventId, imageFile);
@@ -476,6 +517,7 @@ async function saveCommitteeMember(event) {
   showToast('Comitê do evento atualizado.'); await loadOrganizationData();
 }
 
+installEventPublicContentFields();
 document.querySelectorAll('[data-organization-tab]').forEach((button) => button.addEventListener('click', () => switchTab(button.dataset.organizationTab)));
 document.querySelector('#organization-form').addEventListener('submit', createOrganization);
 document.querySelector('#edit-organization').addEventListener('click', openOrganizationEdit);

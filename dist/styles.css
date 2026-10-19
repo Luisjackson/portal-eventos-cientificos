@@ -364,6 +364,19 @@ html[data-theme="dark"] .organization-danger-zone { border-color: #7f1d1d; backg
 html[data-theme="dark"] .organization-danger-zone strong, html[data-theme="dark"] .organization-danger-zone span { color: #fecaca; }
 html[data-theme="dark"] .organization-delete-button { color: #fca5a5; border-color: #7f1d1d; background: #3a1820; }
 @media (max-width: 600px) { .organization-danger-zone { align-items: stretch; flex-direction: column; }.organization-delete-button { width: 100%; } }
+.event-public-content-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 8px 0 0; padding: 18px; border: 1px solid #c9daf4; border-radius: 13px; background: #f7faff; }
+.event-public-content-fields legend { padding: 0 7px; color: var(--ink); font-size: .8rem; font-weight: 800; }
+.event-public-content-fields legend small { margin-left: 5px; color: var(--muted); font-size: .58rem; font-weight: 600; }
+.event-public-content-fields > p { grid-column: 1/-1; margin: -3px 0 2px; color: var(--muted); font-size: .65rem; }
+.event-public-content-fields label { display: grid; gap: 7px; color: #334155; font-size: .7rem; font-weight: 700; }
+.event-public-content-fields label.wide { grid-column: 1/-1; }
+.event-public-content-fields input, .event-public-content-fields textarea { width: 100%; padding: 11px 12px; color: var(--ink); border: 1px solid #cbd5e1; border-radius: 9px; background: white; font: inherit; font-size: .72rem; line-height: 1.5; }
+.event-public-content-fields textarea { resize: vertical; }
+.event-public-content-fields label small { color: var(--muted); font-size: .58rem; font-weight: 500; }
+html[data-theme="dark"] .event-public-content-fields { border-color: #385a84; background: #12233a; }
+html[data-theme="dark"] .event-public-content-fields label { color: #c5d8f3; }
+html[data-theme="dark"] .event-public-content-fields input, html[data-theme="dark"] .event-public-content-fields textarea { color: var(--ink); border-color: #385a84; background: #0e1c2f; }
+@media (max-width: 600px) { .event-public-content-fields { grid-template-columns: 1fr; }.event-public-content-fields label.wide { grid-column: auto; } }
 html[data-theme="dark"] :is(.user-dashboard, .dashboard-page main, .committee-dashboard) { background: #0a1626; }
 html[data-theme="dark"] .organization-onboarding { background: linear-gradient(135deg,#0a1626,#12152d); }
 html[data-theme="dark"] :is(.event-card, .dashboard-card, .dashboard-stats article, .organization-hub, .organization-profile, .committee-submission-card, .committee-participant-card, .review-assignment-card, .portal-dialog, .event-dialog, .registration-dialog, .access-dialog, .cancel-dialog, .submission-dialog, .document-dialog, .chat-panel) { color: var(--ink); border-color: var(--line); background: #0e1c2f; }

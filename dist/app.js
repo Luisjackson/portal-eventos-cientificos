@@ -110,7 +110,10 @@ function managedEventFromConfiguration(configuration, existingEvent = null) {
   const submissionDate = formatManagedDate(configuration.submission_deadline);
   const reviewDate = formatManagedDate(configuration.review_deadline);
   const contactEmail = configuration.contact_email || fallback.contactChannels?.email || 'Contato a definir';
+  const contactPhone = configuration.contact_phone || fallback.contactChannels?.phoneLabel || '';
   const modalities = configuration.modalities?.length ? configuration.modalities : (fallback.call?.modalities || ['Modalidades a definir']);
+  const configuredProgram = Array.isArray(configuration.program_items) ? configuration.program_items.filter((item) => item?.title) : [];
+  const configuredGuidelines = Array.isArray(configuration.submission_guidelines) ? configuration.submission_guidelines.filter(Boolean) : [];
   const managedDeadlines = [
     ...(submissionDate ? [{ date: submissionDate, label: 'Prazo para submissões' }] : []),
     ...(reviewDate ? [{ date: reviewDate, label: 'Prazo para revisões' }] : [])
@@ -123,26 +126,26 @@ function managedEventFromConfiguration(configuration, existingEvent = null) {
     format: (configuration.format || fallback.format || 'presencial').toLowerCase(),
     deadline: submissionDate ? `submissões até ${submissionDate}` : 'prazo de submissão a definir',
     registration: fallback.registration || 'Inscrições administradas pela organização do evento.',
-    program: fallback.program || 'A programação detalhada será divulgada pela organização.',
-    contact: contactEmail,
+    program: configuredProgram.length ? configuredProgram.map((item) => `${item.day || ''} ${item.time || ''}: ${item.title}`).join('; ') : (fallback.program || 'A programação detalhada será divulgada pela organização.'),
+    contact: [contactEmail, contactPhone].filter(Boolean).join(' · '),
     aliases: [...new Set([...(fallback.aliases || []), normalize(name), normalize(configuration.location || '')].filter(Boolean))],
     image: configuration.cover_image_url || fallback.image || './assets/events/data-science.webp',
     description: configuration.description || fallback.description || 'Evento científico cadastrado por uma organização do portal.',
-    programItems: fallback.programItems || [{ day: configuration.starts_on ? formatManagedDate(configuration.starts_on).toUpperCase() : 'EM BREVE', time: '—', title: 'Programação a ser divulgada', place: configuration.location || 'Local a definir' }],
+    programItems: configuredProgram.length ? configuredProgram : (fallback.programItems || [{ day: configuration.starts_on ? formatManagedDate(configuration.starts_on).toUpperCase() : 'EM BREVE', time: '—', title: 'Programação a ser divulgada', place: configuration.location || 'Local a definir' }]),
     deadlines: managedDeadlines.length ? managedDeadlines : (fallback.deadlines || [{ date: 'A DEFINIR', label: 'Cronograma do evento' }]),
     call: {
       status: submissionDate ? 'Chamada aberta' : 'Em preparação',
-      title: fallback.call?.title || 'Chamada de trabalhos do evento',
-      description: fallback.call?.description || 'Consulte as modalidades e os prazos definidos pela organização.',
+      title: configuration.call_title || fallback.call?.title || 'Chamada de trabalhos do evento',
+      description: configuration.call_description || fallback.call?.description || 'Consulte as modalidades e os prazos definidos pela organização.',
       modalities,
-      guidelines: fallback.call?.guidelines || ['Acompanhe esta página para consultar as orientações completas da organização.']
+      guidelines: configuredGuidelines.length ? configuredGuidelines : (fallback.call?.guidelines || ['Acompanhe esta página para consultar as orientações completas da organização.'])
     },
     approvedPapers: fallback.approvedPapers || [],
     contactChannels: {
       email: contactEmail,
-      phone: fallback.contactChannels?.phone || '',
-      phoneLabel: fallback.contactChannels?.phoneLabel || 'Não informado',
-      service: fallback.contactChannels?.service || 'Consulte o e-mail da organização'
+      phone: contactPhone.replace(/[^\d+]/g, ''),
+      phoneLabel: contactPhone || 'Não informado',
+      service: configuration.service_hours || fallback.contactChannels?.service || 'Consulte o e-mail da organização'
     }
   };
 }
