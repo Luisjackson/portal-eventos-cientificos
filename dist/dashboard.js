@@ -77,16 +77,6 @@ function getUserView() {
   };
 }
 
-function activityRoleLabel() {
-  const roles = [];
-  if (registrations.length) roles.push('Participante');
-  if (submissions.length) roles.push('Autor');
-  if (reviews.length) roles.push('Revisor');
-  if (!roles.length) return 'Sem atividades';
-  if (roles.length === 1) return roles[0];
-  return `${roles.slice(0, -1).join(', ')} e ${roles.at(-1)}`;
-}
-
 async function loadProfile() {
   currentProfile = null;
   if (!currentUser) return;
@@ -113,12 +103,8 @@ function updateIdentity() {
   if (!user) return;
   const initials = userInitials(user.name);
   document.querySelector('#dashboard-first-name').textContent = user.name.split(' ')[0];
-  document.querySelector('#dashboard-avatar').textContent = initials;
   document.querySelector('#dashboard-header-avatar').textContent = initials;
   document.querySelector('#dashboard-header-label').textContent = user.name.split(' ')[0];
-  document.querySelector('#dashboard-profile-title').textContent = user.name;
-  document.querySelector('#dashboard-profile-email').textContent = user.email;
-  document.querySelector('#dashboard-profile-role').textContent = activityRoleLabel();
   document.querySelector('#profile-full-name').value = user.name;
   document.querySelector('#profile-email').value = user.email;
   document.querySelector('#profile-institution').value = user.institution;
