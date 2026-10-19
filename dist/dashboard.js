@@ -240,7 +240,11 @@ async function loadRegistrations() {
   const errorPanel = document.querySelector('#dashboard-error');
   errorPanel.hidden = true;
   dashboardEvents.replaceChildren();
-  const { data, error } = await supabaseClient.from('registrations').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabaseClient
+    .from('registrations')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
   if (error) {
     errorPanel.textContent = 'Não foi possível carregar suas inscrições. Atualize a página e tente novamente.';
     errorPanel.hidden = false; registrations = []; return;
