@@ -28,6 +28,7 @@ const authRequired = document.querySelector('#auth-required');
 const dashboardContent = document.querySelector('#dashboard-content');
 const dashboardEvents = document.querySelector('#dashboard-events');
 const cancelDialog = document.querySelector('#cancel-registration-dialog');
+const cancelSubmissionDialog = document.querySelector('#cancel-submission-dialog');
 const submissionDialog = document.querySelector('#submission-dialog');
 const finalVersionDialog = document.querySelector('#final-version-dialog');
 const documentDialog = document.querySelector('#document-dialog');
@@ -41,6 +42,7 @@ let submissions = [];
 let reviews = [];
 let selectedRegistration = null;
 let selectedSubmission = null;
+let submissionToCancel = null;
 let selectedReview = null;
 let editingSubmission = null;
 let toastTimer;
@@ -306,6 +308,11 @@ function renderSubmission(submission) {
   editButton.textContent = 'Editar submissão';
   editButton.addEventListener('click', () => openSubmission(submission));
   card.append(editButton);
+  const cancelButton = document.createElement('button');
+  cancelButton.className = 'submission-cancel-button'; cancelButton.type = 'button';
+  cancelButton.textContent = 'Cancelar submissão';
+  cancelButton.addEventListener('click', () => openCancelSubmissionDialog(submission));
+  card.append(cancelButton);
   if (['accepted', 'changes_requested'].includes(submission.status)) {
     const finalButton = document.createElement('button');
     finalButton.className = 'button button-primary submission-final-button'; finalButton.type = 'button';
@@ -323,9 +330,9 @@ async function loadSubmissions() {
   const empty = document.querySelector('#submissions-empty');
   const errorPanel = document.querySelector('#submissions-error');
   list.replaceChildren(); errorPanel.hidden = true;
-  let { data, error } = await supabaseClient.from('submissions').select('*, coauthors(*), submission_messages(*)').order('created_at', { ascending: false });
+  let { data, error } = await supabaseClient.from('submissions').select('*, coauthors(*), submission_messages(*)').eq('user_id', currentUser.id).order('created_at', { ascending: false });
   if (error && /submission_messages|relationship|schema cache/i.test(error.message || '')) {
-    ({ data, error } = await supabaseClient.from('submissions').select('*, coauthors(*)').order('created_at', { ascending: false }));
+    ({ data, error } = await supabaseClient.from('submissions').select('*, coauthors(*)').eq('user_id', currentUser.id).order('created_at', { ascending: false }));
   }
   if (error) {
     submissions = [];
@@ -501,6 +508,32 @@ async function cancelRegistration() {
   }
   cancelDialog.close(); selectedRegistration = null; showToast('Inscrição cancelada e removida da sua área.');
   await loadRegistrations(); updateIdentity(); renderOverview();
+}
+
+function openCancelSubmissionDialog(submission) {
+  submissionToCancel = submission;
+  document.querySelector('#cancel-submission-title').textContent = submission.title;
+  document.querySelector('#cancel-submission-error').textContent = '';
+  cancelSubmissionDialog.showModal();
+}
+
+async function cancelSubmission() {
+  if (!submissionToCancel || !currentUser) return;
+  const submission = submissionToCancel;
+  const button = document.querySelector('#confirm-cancel-submission');
+  const errorPanel = document.querySelector('#cancel-submission-error');
+  button.disabled = true; button.textContent = 'Cancelando...'; errorPanel.textContent = '';
+  const { data: removed, error } = await supabaseClient.rpc('cancel_my_submission', { p_submission_id: submission.id });
+  button.disabled = false; button.textContent = 'Cancelar submissão';
+  if (error || !removed) {
+    errorPanel.textContent = 'Não foi possível cancelar. Execute migration_cancel_submission.sql no Supabase e tente novamente.';
+    return;
+  }
+  const files = [submission.original_file_path, submission.final_file_path].filter(Boolean);
+  if (files.length) await supabaseClient.storage.from('article-files').remove(files);
+  cancelSubmissionDialog.close(); submissionToCancel = null;
+  showToast('Submissão cancelada e removida da sua área.');
+  await loadSubmissions(); updateIdentity(); renderOverview();
 }
 
 function addCoauthorRow(values = {}) {
@@ -691,6 +724,8 @@ document.querySelector('#dashboard-logout').addEventListener('click', async () =
 });
 document.querySelector('#confirm-cancel-registration').addEventListener('click', cancelRegistration);
 document.querySelectorAll('[data-close-cancel]').forEach((button) => button.addEventListener('click', () => cancelDialog.close()));
+document.querySelector('#confirm-cancel-submission').addEventListener('click', cancelSubmission);
+document.querySelectorAll('[data-close-cancel-submission]').forEach((button) => button.addEventListener('click', () => { cancelSubmissionDialog.close(); submissionToCancel = null; }));
 document.querySelector('#new-submission').addEventListener('click', () => openSubmission());
 document.querySelectorAll('[data-open-submission]').forEach((button) => button.addEventListener('click', () => openSubmission()));
 document.querySelectorAll('[data-close-submission]').forEach((button) => button.addEventListener('click', () => { submissionDialog.close(); editingSubmission = null; }));
@@ -707,7 +742,7 @@ document.querySelector('#print-document').addEventListener('click', () => window
 document.querySelector('#profile-form').addEventListener('submit', saveProfile);
 submissionDialog.addEventListener('close', () => { editingSubmission = null; });
 
-[cancelDialog, submissionDialog, finalVersionDialog, documentDialog, reviewDialog, conflictDialog].forEach((dialog) => dialog.addEventListener('click', (event) => {
+[cancelDialog, cancelSubmissionDialog, submissionDialog, finalVersionDialog, documentDialog, reviewDialog, conflictDialog].forEach((dialog) => dialog.addEventListener('click', (event) => {
   const bounds = dialog.getBoundingClientRect();
   const inside = event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
   if (!inside) dialog.close();
