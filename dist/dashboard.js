@@ -484,9 +484,17 @@ async function cancelRegistration() {
   const button = document.querySelector('#confirm-cancel-registration');
   const errorPanel = document.querySelector('#cancel-registration-error');
   button.disabled = true; button.textContent = 'Cancelando...';
-  const { error } = await supabaseClient.from('registrations').delete().eq('id', selectedRegistration.id).eq('user_id', currentUser.id);
+  let { data: removed, error } = await supabaseClient.rpc('cancel_my_registration', { p_registration_id: selectedRegistration.id });
+  if (error && /cancel_my_registration|schema cache|function/i.test(error.message || '')) {
+    const fallback = await supabaseClient.from('registrations').delete().eq('id', selectedRegistration.id).eq('user_id', currentUser.id).select('id');
+    error = fallback.error;
+    removed = Boolean(fallback.data?.length);
+  }
   button.disabled = false; button.textContent = 'Cancelar inscrição';
-  if (error) { errorPanel.textContent = 'Não foi possível cancelar. Tente novamente.'; return; }
+  if (error || !removed) {
+    errorPanel.textContent = 'Não foi possível cancelar. Execute migration_fix_cancel_registration.sql no Supabase e tente novamente.';
+    return;
+  }
   cancelDialog.close(); selectedRegistration = null; showToast('Inscrição cancelada e removida da sua área.');
   await loadRegistrations(); updateIdentity(); renderOverview();
 }
