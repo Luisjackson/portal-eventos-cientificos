@@ -293,7 +293,7 @@ function renderSubmission(submission) {
   const metadata = document.createElement('div');
   metadata.className = 'submission-metadata';
   const coauthors = submission.coauthors || [];
-  metadata.innerHTML = `<span><strong>Arquivo:</strong> ${escapeHtml(submission.original_file_name || 'artigo.pdf')}</span><span><strong>Coautores:</strong> ${coauthors.length ? coauthors.map((item) => escapeHtml(item.full_name)).join(', ') : 'Nenhum cadastrado'}</span><span><strong>Enviado:</strong> ${new Date(submission.created_at).toLocaleDateString('pt-BR')}</span>`;
+  metadata.innerHTML = `<span><strong>Arquivo:</strong> ${escapeHtml(submission.original_file_name || 'Não anexado')}</span><span><strong>Coautores:</strong> ${coauthors.length ? coauthors.map((item) => escapeHtml(item.full_name)).join(', ') : 'Nenhum cadastrado'}</span><span><strong>Enviado:</strong> ${new Date(submission.created_at).toLocaleDateString('pt-BR')}</span>`;
   card.append(metadata);
   if (submission.review_text) {
     const review = document.createElement('section');
@@ -391,13 +391,16 @@ function renderReview(assignment) {
   } else {
     const actions = document.createElement('div');
     actions.className = 'review-actions';
-    const download = document.createElement('button'); download.type = 'button'; download.className = 'button button-secondary'; download.textContent = 'Baixar PDF';
-    download.addEventListener('click', () => downloadReviewPdf(assignment));
     const evaluate = document.createElement('button'); evaluate.type = 'button'; evaluate.className = 'button button-primary'; evaluate.textContent = assignment.status === 'in_progress' ? 'Continuar avaliação' : 'Iniciar avaliação';
     evaluate.addEventListener('click', () => openReviewDialog(assignment));
     const conflict = document.createElement('button'); conflict.type = 'button'; conflict.className = 'review-conflict-button'; conflict.textContent = 'Declarar conflito';
     conflict.addEventListener('click', () => openConflictDialog(assignment));
-    actions.append(download, evaluate, conflict); card.append(actions);
+    if (assignment.submission?.original_file_path) {
+      const download = document.createElement('button'); download.type = 'button'; download.className = 'button button-secondary'; download.textContent = 'Baixar PDF';
+      download.addEventListener('click', () => downloadReviewPdf(assignment));
+      actions.append(download);
+    }
+    actions.append(evaluate, conflict); card.append(actions);
   }
   return card;
 }
@@ -518,17 +521,12 @@ function openSubmission(submission = null) {
   document.querySelector('#coauthor-list').replaceChildren();
   document.querySelector('#submission-form-error').textContent = '';
   const fileInput = document.querySelector('#submission-file');
-  const reviewerField = document.querySelector('#reviewer-assignment-field');
-  const reviewerInput = document.querySelector('#submission-reviewer-email');
   const editing = Boolean(submission);
   document.querySelector('#submission-dialog-title').textContent = editing ? 'Editar submissão' : 'Submeter novo artigo';
-  document.querySelector('#submission-dialog-description').textContent = editing ? 'Atualize os dados abaixo. O código e as atribuições deste artigo serão preservados.' : 'Preencha os dados e envie o manuscrito em PDF.';
+  document.querySelector('#submission-dialog-description').textContent = editing ? 'Atualize os dados abaixo. O código e as atribuições deste artigo serão preservados.' : 'Preencha os dados do trabalho. O comitê atribuirá os revisores depois.';
   document.querySelector('#submission-submit-button').textContent = editing ? 'Salvar alterações' : 'Enviar artigo';
-  document.querySelector('#submission-file-help').textContent = editing ? `PDF atual: ${submission.original_file_name || 'artigo.pdf'}. Selecione outro somente se quiser substituí-lo.` : 'Arquivo PDF de até 10 MB.';
-  fileInput.required = !editing;
-  reviewerField.hidden = editing;
-  reviewerInput.required = !editing;
-  reviewerInput.disabled = editing;
+  document.querySelector('#submission-file-help').textContent = editing && submission.original_file_name ? `PDF atual: ${submission.original_file_name}. Selecione outro somente se quiser substituí-lo.` : 'Opcional. Arquivo PDF de até 10 MB.';
+  fileInput.required = false;
   if (editing) {
     const eventSelect = document.querySelector('#submission-event');
     const available = [...eventSelect.options].some((option) => option.value === submission.event_name);
@@ -556,13 +554,12 @@ async function submitArticle(event) {
   }
   const file = document.querySelector('#submission-file').files[0];
   const abstract = document.querySelector('#submission-abstract').value.trim();
-  if ((!editingSubmission && !validPdf(file)) || (file && !validPdf(file))) { errorPanel.textContent = 'Selecione um arquivo PDF de até 10 MB.'; return; }
+  if (file && !validPdf(file)) { errorPanel.textContent = 'Selecione um arquivo PDF de até 10 MB.'; return; }
   const coauthors = [...document.querySelectorAll('.coauthor-row')].map((row) => ({
     full_name: row.querySelector('[data-coauthor-name]').value.trim(),
     email: row.querySelector('[data-coauthor-email]').value.trim().toLowerCase(),
     institution: row.querySelector('[data-coauthor-institution]').value.trim()
   }));
-  const reviewerEmail = document.querySelector('#submission-reviewer-email').value.trim().toLowerCase();
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true; button.textContent = 'Enviando…'; errorPanel.textContent = '';
   if (editingSubmission) {
@@ -600,36 +597,26 @@ async function submitArticle(event) {
     showToast(coauthorError ? 'Artigo atualizado, mas não foi possível salvar todos os coautores.' : 'Submissão atualizada com sucesso.');
     await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions'); return;
   }
-  if (!reviewerEmail) {
-    errorPanel.textContent = 'Informe o e-mail da pessoa que revisará o artigo.';
-    button.disabled = false; button.textContent = 'Enviar artigo'; return;
-  }
-  const { data: reviewerExists, error: reviewerCheckError } = await supabaseClient.rpc('reviewer_account_exists', { p_reviewer_email: reviewerEmail });
-  if (reviewerCheckError) {
-    errorPanel.textContent = 'Execute a migração migration_assign_reviewer_on_submission.sql no Supabase antes de atribuir o revisor.';
-    button.disabled = false; button.textContent = 'Enviar artigo'; return;
-  }
-  if (!reviewerExists) {
-    errorPanel.textContent = 'Não encontramos outra conta cadastrada com esse e-mail. O autor não pode revisar o próprio artigo.';
-    button.disabled = false; button.textContent = 'Enviar artigo'; return;
-  }
   const submissionId = crypto.randomUUID();
-  const storagePath = `${currentUser.id}/${submissionId}/original.pdf`;
-  const { error: uploadError } = await supabaseClient.storage.from('article-files').upload(storagePath, file, { contentType: 'application/pdf', upsert: false });
-  if (uploadError) {
-    errorPanel.textContent = /bucket|not found|policy/i.test(uploadError.message || '') ? 'Execute a migração da área do autor no Supabase antes de enviar artigos.' : 'Não foi possível enviar o PDF. Tente novamente.';
-    button.disabled = false; button.textContent = 'Enviar artigo'; return;
+  let storagePath = '';
+  if (file) {
+    storagePath = `${currentUser.id}/${submissionId}/original.pdf`;
+    const { error: uploadError } = await supabaseClient.storage.from('article-files').upload(storagePath, file, { contentType: 'application/pdf', upsert: false });
+    if (uploadError) {
+      errorPanel.textContent = /bucket|not found|policy/i.test(uploadError.message || '') ? 'Execute a migração da área do autor no Supabase antes de enviar artigos.' : 'Não foi possível enviar o PDF. Tente novamente.';
+      button.disabled = false; button.textContent = 'Enviar artigo'; return;
+    }
   }
   const record = {
     id: submissionId, user_id: currentUser.id,
     event_name: document.querySelector('#submission-event').value.trim(),
     title: document.querySelector('#submission-title').value.trim(),
     track: document.querySelector('#submission-track').value,
-    abstract, original_file_path: storagePath, original_file_name: file.name, status: 'submitted'
+    abstract, original_file_path: storagePath, original_file_name: file?.name || '', status: 'submitted'
   };
   const { error: insertError } = await supabaseClient.from('submissions').insert(record);
   if (insertError) {
-    await supabaseClient.storage.from('article-files').remove([storagePath]);
+    if (storagePath) await supabaseClient.storage.from('article-files').remove([storagePath]);
     errorPanel.textContent = 'Não foi possível registrar a submissão. Execute a migração indicada e tente novamente.';
     button.disabled = false; button.textContent = 'Enviar artigo'; return;
   }
@@ -637,14 +624,8 @@ async function submitArticle(event) {
     const { error: coauthorError } = await supabaseClient.from('coauthors').insert(coauthors.map((coauthor) => ({ ...coauthor, submission_id: submissionId, owner_id: currentUser.id })));
     if (coauthorError) showToast('Artigo enviado, mas não foi possível salvar todos os coautores.');
   }
-  const { error: assignmentError } = await supabaseClient.rpc('assign_submission_reviewer', { p_submission_id: submissionId, p_reviewer_email: reviewerEmail });
-  if (assignmentError) {
-    button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close(); editingSubmission = null;
-    showToast('Artigo criado, mas a atribuição falhou. Verifique a migração no Supabase.');
-    await loadSubmissions(); renderOverview(); switchTab('submissions'); return;
-  }
   button.disabled = false; button.textContent = 'Enviar artigo'; submissionDialog.close(); editingSubmission = null;
-  showToast('Artigo submetido e atribuído ao revisor.'); await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions');
+  showToast('Artigo submetido. Aguardando atribuição de revisores pelo comitê.'); await loadSubmissions(); updateIdentity(); renderOverview(); switchTab('submissions');
 }
 
 function openFinalVersion(submission) {
