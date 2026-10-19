@@ -96,10 +96,12 @@ async function loadProfile() {
 
 async function loadSubmissionEventOptions() {
   const select = document.querySelector('#submission-event');
-  const { data, error } = await supabaseClient
-    .from('event_configurations')
-    .select('event_name')
-    .order('event_name');
+  let { data, error } = await supabaseClient.rpc('list_submission_event_names');
+  if (error) {
+    const fallback = await supabaseClient.from('event_configurations').select('event_name').order('event_name');
+    data = fallback.data;
+    error = fallback.error;
+  }
   const eventNames = new Set(defaultSubmissionEvents);
   if (!error) (data || []).forEach((event) => { if (event.event_name?.trim()) eventNames.add(event.event_name.trim()); });
   select.replaceChildren(new Option('Selecione um evento disponível', ''));
@@ -555,7 +557,6 @@ async function submitArticle(event) {
   const file = document.querySelector('#submission-file').files[0];
   const abstract = document.querySelector('#submission-abstract').value.trim();
   if ((!editingSubmission && !validPdf(file)) || (file && !validPdf(file))) { errorPanel.textContent = 'Selecione um arquivo PDF de até 10 MB.'; return; }
-  if (abstract.length < 80) { errorPanel.textContent = 'O resumo precisa ter pelo menos 80 caracteres.'; return; }
   const coauthors = [...document.querySelectorAll('.coauthor-row')].map((row) => ({
     full_name: row.querySelector('[data-coauthor-name]').value.trim(),
     email: row.querySelector('[data-coauthor-email]').value.trim().toLowerCase(),
